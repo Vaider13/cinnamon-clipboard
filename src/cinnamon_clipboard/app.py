@@ -1,6 +1,6 @@
 import gi
 
-gi.require_version("Gtk", "4.0")
+gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gtk
 
@@ -9,7 +9,7 @@ from .ui.tray import TrayIcon
 
 
 class ClipboardApp(Gtk.Application):
-    """Aplicación principal de Cinnamon Clipboard."""
+    """Aplicación principal de Cinnamon Clipboard en GTK3."""
 
     def __init__(self):
         super().__init__(
@@ -23,10 +23,8 @@ class ClipboardApp(Gtk.Application):
         window.set_title("Cinnamon Clipboard")
         window.set_default_size(600, 500)
 
-        # Inicia la escucha de eventos del portapapeles
         self.clipboard_manager.connect_to_changes()
 
-        # Inicia el ícono de la bandeja del sistema
         if self.tray_icon is None:
             self.tray_icon = TrayIcon(
                 app=self,
