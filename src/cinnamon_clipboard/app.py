@@ -23,14 +23,15 @@ class ClipboardApp(Gtk.Application):
         window.set_title("Cinnamon Clipboard")
         window.set_default_size(600, 500)
 
-        self.clipboard_manager.connect_to_changes()
-
         if self.tray_icon is None:
             self.tray_icon = TrayIcon(
                 app=self,
                 clipboard_manager=self.clipboard_manager,
                 on_open_app_callback=window.present
             )
+
+        # Escuchar eventos del portapapeles
+        self.clipboard_manager.connect_to_changes()
 
         window.present()
 

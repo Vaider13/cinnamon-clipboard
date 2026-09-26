@@ -1,11 +1,13 @@
+import os
 import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
+gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("Pango", "1.0")
 gi.require_version("GLib", "2.0")
 
-from gi.repository import Gtk, Gdk, Pango, GLib
+from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
 
 class QuickMenuWindow(Gtk.Window):
@@ -17,12 +19,12 @@ class QuickMenuWindow(Gtk.Window):
         self.clipboard_manager = clipboard_manager
         self.on_open_main_window_callback = on_open_main_window_callback
 
-        # Configuración de pistas de ventana para Muffin (Cinnamon)
+        # Configuración para Muffin (Cinnamon)
         self.set_decorated(False)
         self.set_resizable(False)
         self.set_skip_taskbar_hint(True)
         self.set_skip_pager_hint(True)
-        self.set_type_hint(Gdk.WindowTypeHint.POPUP_MENU)
+        self.set_type_hint(Gdk.WindowTypeHint.DROPDOWN_MENU)
         self.set_keep_above(True)
 
         self.set_default_size(340, -1)
@@ -41,10 +43,12 @@ class QuickMenuWindow(Gtk.Window):
         frame.add(self.main_box)
 
         self._fade_timer_id = None
+        self._seat_grabbed = False
 
-        # Cierre automático
+        # Eventos de teclado y clics
         self.connect("key-press-event", self._on_key_press)
-        self.connect("focus-out-event", lambda w, e: self.hide_animated())
+        self.connect("button-press-event", self._on_button_press)
+        self.connect("focus-out-event", self._on_focus_out)
 
     def toggle_window(self):
         """Abre o cierra la ventana desplegable."""
@@ -53,8 +57,23 @@ class QuickMenuWindow(Gtk.Window):
         else:
             self.refresh_and_show()
 
+    def _release_grab(self):
+        """Libera la captura del dispositivo de entrada X11/GDK de forma segura."""
+        if not self._seat_grabbed:
+            return
+
+        display = Gdk.Display.get_default()
+        if display:
+            seat = display.get_default_seat()
+            if seat:
+                seat.ungrab()
+
+        self._seat_grabbed = False
+
     def hide_animated(self):
         """Oculta la ventana mediante desvanecimiento suave."""
+        self._release_grab()
+
         if self._fade_timer_id:
             GLib.source_remove(self._fade_timer_id)
 
@@ -62,6 +81,7 @@ class QuickMenuWindow(Gtk.Window):
             current_opacity = self.get_opacity()
             if current_opacity <= 0.1:
                 self.hide()
+                self.set_opacity(1.0)  # Dejar opacidad limpia
                 self._fade_timer_id = None
                 return False
             self.set_opacity(current_opacity - 0.2)
@@ -69,16 +89,34 @@ class QuickMenuWindow(Gtk.Window):
 
         self._fade_timer_id = GLib.timeout_add(15, _fade_step)
 
+    def _on_focus_out(self, widget, event):
+        """Si pierde el foco, verifica si el clic fue afuera para cerrar."""
+        if self.get_visible():
+            self.hide_animated()
+        return False
+
+    def _on_button_press(self, widget, event):
+        """Si el evento de clic ocurrió fuera del rectángulo del menú, se cierra."""
+        alloc = self.get_allocation()
+        if event.x < 0 or event.x >= alloc.width or event.y < 0 or event.y >= alloc.height:
+            self.hide_animated()
+            return True
+        return False
+
     def _update_position(self):
-        """Calcula y aplica la posición fija anclando siempre la base sobre el panel."""
-        self.check_resize()  # Forzar a GTK a recalcular el tamaño del widget reducido
+        """Calcula el alto dinámico del contenido y ancla la base sobre el panel."""
+        self.check_resize()
+
         screen = Gdk.Screen.get_default()
         monitor_geom = screen.get_monitor_geometry(0)
 
-        # Obtener el tamaño preferido real actual
+        # Límite Máximo Rígido: 360px o ~30% del alto de la pantalla
+        max_allowed_height = min(360, int(monitor_geom.height * 0.30))
+
         _, req_height = self.get_preferred_height()
+
         win_w = 340
-        win_h = max(req_height, 100)
+        win_h = min(max(req_height, 90), max_allowed_height)
 
         pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
         pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
@@ -86,7 +124,7 @@ class QuickMenuWindow(Gtk.Window):
         self.move(pos_x, pos_y)
 
     def refresh_and_show(self):
-        """Reconstruye el contenido, posiciona y aplica fade-in."""
+        """Reconstruye el contenido, limita la altura de forma estricta y muestra el menú."""
         for child in self.main_box.get_children():
             self.main_box.remove(child)
 
@@ -98,17 +136,24 @@ class QuickMenuWindow(Gtk.Window):
             empty_label.set_margin_bottom(16)
             self.main_box.pack_start(empty_label, False, False, 0)
         else:
+            screen = Gdk.Screen.get_default()
+            monitor_geom = screen.get_monitor_geometry(0)
+            max_height_limit = min(320, int(monitor_geom.height * 0.28))
+
             scrolled = Gtk.ScrolledWindow()
             scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-            scrolled.set_max_content_height(420)
             scrolled.set_propagate_natural_height(True)
+            scrolled.set_max_content_height(max_height_limit)
 
             list_box = Gtk.ListBox()
-            list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+            list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
+            list_box.connect("row-activated", self._on_row_activated)
             scrolled.add(list_box)
 
+            size_group_btn = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
+
             for item in history:
-                row_item = self._create_item_row(item)
+                row_item = self._create_item_row(item, size_group_btn)
                 list_box.add(row_item)
 
             self.main_box.pack_start(scrolled, True, True, 0)
@@ -118,9 +163,10 @@ class QuickMenuWindow(Gtk.Window):
         # Barra inferior
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
 
-        btn_clear = Gtk.Button(label="Vaciar todo")
-        btn_clear.connect("clicked", self._on_clear_all)
-        bottom_box.pack_start(btn_clear, False, False, 0)
+        if history:
+            btn_clear = Gtk.Button(label="Vaciar todo")
+            btn_clear.connect("clicked", self._on_clear_all)
+            bottom_box.pack_start(btn_clear, False, False, 0)
 
         spacer = Gtk.Box()
         bottom_box.pack_start(spacer, True, True, 0)
@@ -133,14 +179,17 @@ class QuickMenuWindow(Gtk.Window):
         self.main_box.pack_start(bottom_box, False, False, 0)
 
         self.show_all()
-
-        # Ajustar posición anclada a la base
         self._update_position()
 
         if self.get_window():
             self.get_window().raise_()
 
-        # Fade in si recién se abre
+        self.present()
+
+        # Intentar capturar el Seat. Si Cinnamon lo retiene, se reintentará mediante GLib timeout
+        GLib.timeout_add(30, self._grab_seat)
+
+        # Fade-in suave
         if not self.get_visible() or self.get_opacity() < 0.9:
             self.set_opacity(0.0)
             if self._fade_timer_id:
@@ -157,9 +206,41 @@ class QuickMenuWindow(Gtk.Window):
 
             self._fade_timer_id = GLib.timeout_add(15, _fade_in_step)
 
-    def _create_item_row(self, item):
-        """Crea un Gtk.ListBoxRow con soporte nativo de Hover y clic en 'X'."""
+    def _grab_seat(self):
+        """Intenta capturar el Seat. Devuelve True para reintentar si Cinnamon tenía el clic capturado."""
+        if not self.get_visible():
+            return False
+
+        window = self.get_window()
+
+        if window and not self._seat_grabbed:
+            display = Gdk.Display.get_default()
+
+            if display:
+                seat = display.get_default_seat()
+
+                if seat:
+                    status = seat.grab(
+                        window,
+                        Gdk.SeatCapabilities.POINTER | Gdk.SeatCapabilities.KEYBOARD,
+                        True,
+                        None,
+                        None,
+                        None
+                    )
+
+                    if status == Gdk.GrabStatus.SUCCESS:
+                        self._seat_grabbed = True
+                        return False  # Éxito: detiene el ciclo de reintentos
+                    elif status == Gdk.GrabStatus.ALREADY_GRABBED:
+                        return True  # Reintenta automáticamente en el próximo ciclo de 30ms
+
+        return False
+
+    def _create_item_row(self, item, size_group_btn):
+        """Crea una fila del historial con vista previa limpia y alineación estricta de la X."""
         list_row = Gtk.ListBoxRow()
+        list_row.item_data = item
 
         grid = Gtk.Grid()
         grid.set_column_spacing(8)
@@ -169,18 +250,21 @@ class QuickMenuWindow(Gtk.Window):
         grid.set_margin_top(6)
         grid.set_margin_bottom(6)
 
-        # 1. CASO IMAGEN
+        # 1. IMAGEN
         if item["type"] == "image":
             if item.get("pixbuf"):
                 img_widget = Gtk.Image.new_from_pixbuf(item["pixbuf"])
-                img_widget.set_hexpand(True)
                 img_widget.set_halign(Gtk.Align.START)
                 grid.attach(img_widget, 0, 0, 1, 1)
             else:
                 label = Gtk.Label(label="[Imagen]", xalign=0)
                 grid.attach(label, 0, 0, 1, 1)
 
-        # 2. CASO ARCHIVOS
+            spacer = Gtk.Box()
+            size_group_btn.add_widget(spacer)
+            grid.attach(spacer, 1, 0, 1, 1)
+
+        # 2. ARCHIVOS / CARPETAS
         elif item["type"] == "files":
             box_file = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
             icon_file = Gtk.Image.new_from_icon_name("folder-documents-symbolic", Gtk.IconSize.BUTTON)
@@ -188,52 +272,130 @@ class QuickMenuWindow(Gtk.Window):
 
             label = Gtk.Label(label=item["preview"], xalign=0)
             label.set_line_wrap(True)
-            label.set_lines(2)
+            label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
+            label.set_max_width_chars(22)
             label.set_ellipsize(Pango.EllipsizeMode.END)
-            box_file.pack_start(label, True, True, 0)
 
+            box_file.pack_start(label, True, True, 0)
             grid.attach(box_file, 0, 0, 1, 1)
 
-        # 3. CASO TEXTO
+            spacer = Gtk.Box()
+            size_group_btn.add_widget(spacer)
+            grid.attach(spacer, 1, 0, 1, 1)
+
+        # 3. TEXTO
         else:
             full_text = item["data"].strip()
-            truncated_text = full_text[:250] + "..." if len(full_text) > 250 else full_text
 
-            label = Gtk.Label(label=truncated_text, xalign=0)
+            raw_lines = full_text.splitlines()
+            preview_lines = []
+
+            for line in raw_lines:
+                if len(line) > 70:
+                    chunks = [line[i:i + 70] for i in range(0, len(line), 70)]
+                    preview_lines.extend(chunks)
+                else:
+                    preview_lines.append(line)
+
+                if len(preview_lines) >= 3:
+                    break
+
+            preview_lines = preview_lines[:3]
+            preview_text = "\n".join(preview_lines)
+
+            needs_expand = len(raw_lines) > 3 or len(full_text) > 210
+
+            if needs_expand:
+                preview_text = preview_text.rstrip() + "..."
+
+            label = Gtk.Label(label=preview_text, xalign=0)
             label.set_line_wrap(True)
             label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
-            label.set_lines(3)
-            label.set_ellipsize(Pango.EllipsizeMode.END)
-            label.set_max_width_chars(30)
-            label.set_size_request(240, -1)
+
+            label.set_size_request(210, -1)
+            label.set_hexpand(True)
+            label.set_halign(Gtk.Align.START)
+            label.set_valign(Gtk.Align.CENTER)
+            label.set_selectable(False)
+
             grid.attach(label, 0, 0, 1, 1)
 
-        grid.get_child_at(0, 0).set_hexpand(True)
+            if needs_expand:
+                btn_expand = Gtk.Button.new_from_icon_name("pan-down-symbolic", Gtk.IconSize.BUTTON)
+                btn_expand.set_relief(Gtk.ReliefStyle.NONE)
+                btn_expand.set_valign(Gtk.Align.CENTER)
+                btn_expand.set_halign(Gtk.Align.CENTER)
 
-        # Botón 'X'
+                btn_expand.expanded = False
+                btn_expand.connect(
+                    "clicked",
+                    self._toggle_text_expand,
+                    label,
+                    full_text,
+                    preview_text
+                )
+
+                size_group_btn.add_widget(btn_expand)
+                grid.attach(btn_expand, 1, 0, 1, 1)
+            else:
+                spacer = Gtk.Box()
+                size_group_btn.add_widget(spacer)
+                grid.attach(spacer, 1, 0, 1, 1)
+
+        # BOTÓN ELIMINAR (FIJO EN COLUMNA 2)
         btn_delete = Gtk.Button.new_from_icon_name("window-close-symbolic", Gtk.IconSize.BUTTON)
         btn_delete.set_relief(Gtk.ReliefStyle.NONE)
         btn_delete.set_valign(Gtk.Align.CENTER)
-        btn_delete.set_halign(Gtk.Align.END)
+        btn_delete.set_halign(Gtk.Align.CENTER)
         btn_delete.connect("clicked", lambda b, i_id=item["id"]: self._on_delete_item(i_id))
 
-        grid.attach(btn_delete, 1, 0, 1, 1)
+        grid.attach(btn_delete, 2, 0, 1, 1)
 
         list_row.add(grid)
-        list_row.connect("button-press-event", lambda w, e, it=item: self._on_select_item(it))
-
         return list_row
+
+    def _toggle_text_expand(self, button, label, full_text, preview_text):
+        """Expande o contrae el texto mostrando el contenido completo o su vista previa de 3 líneas."""
+        if not getattr(button, "expanded", False):
+            button.expanded = True
+            label.set_text(full_text)
+            button.set_image(Gtk.Image.new_from_icon_name("pan-up-symbolic", Gtk.IconSize.BUTTON))
+        else:
+            button.expanded = False
+            label.set_text(preview_text)
+            button.set_image(Gtk.Image.new_from_icon_name("pan-down-symbolic", Gtk.IconSize.BUTTON))
+
+        GLib.idle_add(self._update_position)
+
+    def _on_row_activated(self, list_box, row):
+        """Acción ejecutada al hacer clic en cualquier fila de la lista."""
+        item = getattr(row, "item_data", None)
+        if not item:
+            return
+
+        if item["type"] == "text":
+            self.clipboard_manager.is_self_copying = True
+            self.clipboard_manager.clipboard.set_text(item["data"], -1)
+            print(f"[COPIADO] Texto puesto en portapapeles.")
+
+        elif item["type"] == "image":
+            if "data_path" in item and os.path.exists(item["data_path"]):
+                self.clipboard_manager.is_self_copying = True
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
+                self.clipboard_manager.clipboard.set_image(pixbuf)
+                print(f"[COPIADO] Imagen de caché puesta en portapapeles.")
+
+        elif item["type"] == "files":
+            self.clipboard_manager.set_files(item["data"])
+            print(f"[COPIADO] Lista de {len(item['data'])} archivo(s) puesta en portapapeles.")
+
+        self.hide_animated()
 
     def _on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             self.hide_animated()
             return True
         return False
-
-    def _on_select_item(self, item):
-        if item["type"] == "text":
-            self.clipboard_manager.clipboard.set_text(item["data"], -1)
-        self.hide_animated()
 
     def _on_delete_item(self, item_id):
         self.clipboard_manager.remove_item(item_id)
