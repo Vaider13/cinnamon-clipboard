@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+src/cinnamon_clipboard/__init__.py
+src/cinnamon_clipboard/__main__.py
+src/cinnamon_clipboard/app.py
+src/cinnamon_clipboard.egg-info/PKG-INFO
+src/cinnamon_clipboard.egg-info/SOURCES.txt
+src/cinnamon_clipboard.egg-info/dependency_links.txt
+src/cinnamon_clipboard.egg-info/top_level.txt
+src/tests/__init__.py
