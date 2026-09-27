@@ -1,7 +1,7 @@
 import hashlib
 import os
-from pathlib import Path
 import subprocess
+from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 import gi
@@ -11,7 +11,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("GLib", "2.0")
 
-from gi.repository import Gtk, Gdk, GdkPixbuf, GLib
+from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 
 
 class ClipboardManager:
@@ -93,16 +93,18 @@ class ClipboardManager:
         if pixbuf:
             image_bytes = pixbuf.get_pixels()
             img_hash = hashlib.sha256(image_bytes).hexdigest()
-            signature = ("image", img_hash)
+            w, h = pixbuf.get_width(), pixbuf.get_height()
+
+            # AJUSTE B: Firma enriquecida con ancho, alto y hash
+            signature = ("image", w, h, img_hash)
 
             if signature != self._last_content_signature:
                 self._last_content_signature = signature
                 self.change_count += 1
 
-                w, h = pixbuf.get_width(), pixbuf.get_height()
                 scaled_pixbuf = self._scale_pixbuf(pixbuf, target_size=140)
 
-                cached_file_path = self.cache_dir / f"{img_hash}.png"
+                cached_file_path = self.cache_dir / f"{w}x{h}_{img_hash}.png"
                 if not cached_file_path.exists():
                     pixbuf.savev(str(cached_file_path), "png", [], [])
 
@@ -141,9 +143,10 @@ class ClipboardManager:
 
     def set_files(self, file_paths):
         """Publica archivos en el portapapeles usando xclip con la cabecera x-special/gnome-copied-files requerida por Nemo."""
-        self.is_self_copying = True
+        uris = [GLib.filename_to_uri(p, None) for p in file_paths if os.path.exists(p)]
+        if not uris:
+            return
 
-        uris = [GLib.filename_to_uri(p, None) for p in file_paths]
         gnome_payload = "copy\n" + "\n".join(uris)
 
         try:
@@ -152,7 +155,12 @@ class ClipboardManager:
                 stdin=subprocess.PIPE
             )
             process.communicate(input=gnome_payload.encode("utf-8"))
+
+            # AJUSTE A: Solo marcar como auto-copiado si xclip no lanzó excepción
+            self.is_self_copying = True
+            print(f"[ARCHIVOS] {len(uris)} elemento(s) configurado(s) en el portapapeles.")
         except Exception as e:
+            self.is_self_copying = False
             print(f"[ERROR] No se pudo publicar archivos con xclip: {e}")
 
     def _read_uri_list(self):
