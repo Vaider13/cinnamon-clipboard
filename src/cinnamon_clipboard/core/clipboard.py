@@ -271,5 +271,4 @@ class ClipboardManager:
         self.db.clear_all()
         self._last_content_signature = None
 
-        git add .
-git commit -m "feat: integrar persistencia SQLite y almacenamiento permanente de imagenes"
+        
