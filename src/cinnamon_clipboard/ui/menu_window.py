@@ -143,7 +143,7 @@ class QuickMenuWindow(Gtk.Window):
             scrolled = Gtk.ScrolledWindow()
             scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
             scrolled.set_propagate_natural_height(True)
-            scrolled.set_max_content_height(max_height_limit)
+            scrolled.set_max_content_height(max_height_limit - 50)
 
             list_box = Gtk.ListBox()
             list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
@@ -162,7 +162,6 @@ class QuickMenuWindow(Gtk.Window):
 
         # Barra inferior
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-
         if history:
             btn_clear = Gtk.Button(label="Vaciar todo")
             btn_clear.connect("clicked", self._on_clear_all)
@@ -180,7 +179,7 @@ class QuickMenuWindow(Gtk.Window):
 
         self.show_all()
         self._update_position()
-
+       
         if self.get_window():
             self.get_window().raise_()
 
@@ -222,7 +221,7 @@ class QuickMenuWindow(Gtk.Window):
                 if seat:
                     status = seat.grab(
                         window,
-                        Gdk.SeatCapabilities.POINTER | Gdk.SeatCapabilities.KEYBOARD,
+                        Gdk.SeatCapabilities.POINTER,
                         True,
                         None,
                         None,
@@ -261,6 +260,7 @@ class QuickMenuWindow(Gtk.Window):
                 grid.attach(label, 0, 0, 1, 1)
 
             spacer = Gtk.Box()
+            spacer.set_hexpand(True)
             size_group_btn.add_widget(spacer)
             grid.attach(spacer, 1, 0, 1, 1)
 
