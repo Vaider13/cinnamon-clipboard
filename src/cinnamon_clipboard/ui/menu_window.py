@@ -9,15 +9,24 @@ gi.require_version("GLib", "2.0")
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
+from .preferences_window import PreferencesWindow
+
 
 class QuickMenuWindow(Gtk.Window):
     """Ventana desplegable estilo menú nativo para la bandeja de Cinnamon."""
 
-    def __init__(self, clipboard_manager, on_open_main_window_callback=None):
+    def __init__(self, clipboard_manager, on_open_main_window_callback=None, on_quit_app_callback=None):
         super().__init__(type=Gtk.WindowType.TOPLEVEL)
 
         self.clipboard_manager = clipboard_manager
         self.on_open_main_window_callback = on_open_main_window_callback
+        self.on_quit_app_callback = on_quit_app_callback
+        print(f"[DEBUG] CALLBACK RECIBIDO EN __init__ = {on_quit_app_callback}")
+        print(f"[DEBUG] QuickMenuWindow creado. callback = {on_quit_app_callback}")
+        self.pref_window = None
+        self.panel_x = None
+        self.panel_y = None
+        self.panel_position = None
 
         # Configuración para Muffin (Cinnamon)
         self.set_decorated(False)
@@ -71,6 +80,17 @@ class QuickMenuWindow(Gtk.Window):
         self.btn_clear.connect("clicked", self._on_clear_all)
         self.bottom_box.pack_start(self.btn_clear, False, False, 0)
 
+        btn_pref = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
+        btn_pref.set_tooltip_text("Preferencias")
+        btn_pref.connect("clicked", self._open_preferences)
+        self.bottom_box.pack_start(btn_pref, False, False, 0)
+
+        # Botón para salir/cerrar la app completamente
+        btn_exit = Gtk.Button.new_from_icon_name("application-exit-symbolic", Gtk.IconSize.BUTTON)
+        btn_exit.set_tooltip_text("Salir de Cinnamon Clipboard")
+        btn_exit.connect("clicked", self._on_quit_app)
+        self.bottom_box.pack_start(btn_exit, False, False, 0)
+
         spacer = Gtk.Box()
         self.bottom_box.pack_start(spacer, True, True, 0)
 
@@ -91,6 +111,20 @@ class QuickMenuWindow(Gtk.Window):
         self.connect("key-press-event", self._on_key_press)
         self.connect("button-press-event", self._on_button_press)
         self.connect("focus-out-event", self._on_focus_out)
+
+    def _open_preferences(self, btn):
+        self.hide_animated()
+        if self.pref_window is None or not self.pref_window.get_visible():
+            app = self.get_application()
+            shortcut_cb = app.update_global_shortcut if app else None
+            self.pref_window = PreferencesWindow(
+                self.clipboard_manager.settings,
+                self.clipboard_manager,
+                on_shortcut_changed_callback=shortcut_cb
+            )
+            self.pref_window.show_all()
+        else:
+            self.pref_window.present()
 
     def _filter_list_func(self, row):
         """Filtra dinámicamente las filas sin reconstruir los widgets."""
@@ -169,22 +203,87 @@ class QuickMenuWindow(Gtk.Window):
         return False
 
     def _update_position(self):
-        """Calcula el alto dinámico del contenido y ancla la base sobre el panel."""
+        """Calcula la posición del menú según la orientación y posición del panel."""
         self.check_resize()
 
         screen = Gdk.Screen.get_default()
         monitor_geom = screen.get_monitor_geometry(0)
 
-        # Límite Máximo Ampliado: 500px o ~45% del alto de la pantalla
-        max_allowed_height = min(500, int(monitor_geom.height * 0.45))
-
+        # Límite máximo de altura del menú.
         _, req_height = self.get_preferred_height()
 
         win_w = 340
+
+        # Calculamos cuánto espacio vertical tenemos realmente
+        # según la posición del panel.
+        if self.panel_position == Gtk.PositionType.BOTTOM and self.panel_y is not None:
+            max_allowed_height = self.panel_y - monitor_geom.y
+
+        elif self.panel_position == Gtk.PositionType.TOP and self.panel_y is not None:
+            max_allowed_height = (monitor_geom.y + monitor_geom.height) - self.panel_y
+
+        else:
+            # Fallback para cuando todavía no conocemos la posición del panel.
+            max_allowed_height = min(500, int(monitor_geom.height * 0.45))
+
+        # Dejamos un pequeño margen de seguridad.
+        max_allowed_height = max(90, max_allowed_height - 5)
+
         win_h = min(max(req_height, 90), max_allowed_height)
 
-        pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
-        pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
+        print(
+            f"[DEBUG] ESPACIO MONITOR: "
+            f"alto={monitor_geom.height}, "
+            f"máximo_actual={max_allowed_height}, "
+            f"preferido={req_height}, "
+            f"final={win_h}"
+        )
+
+        # Si todavía no tenemos información de XApp,
+        # usamos la posición anterior como fallback.
+        if self.panel_x is None or self.panel_y is None:
+            pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
+            pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
+            self.move(pos_x, pos_y)
+
+            return
+
+        # XApp usa Gtk.PositionType para indicar dónde está el panel.
+        if self.panel_position == Gtk.PositionType.BOTTOM:
+            # Panel abajo → menú encima del panel.
+            pos_x = self.panel_x - (win_w // 2)
+            pos_y = self.panel_y - win_h
+
+        elif self.panel_position == Gtk.PositionType.TOP:
+            # Panel arriba → menú debajo del panel.
+            pos_x = self.panel_x - (win_w // 2)
+            pos_y = self.panel_y
+
+        elif self.panel_position == Gtk.PositionType.LEFT:
+            # Panel izquierdo → menú a la derecha del panel.
+            pos_x = self.panel_x
+            pos_y = self.panel_y - (win_h // 2)
+
+        elif self.panel_position == Gtk.PositionType.RIGHT:
+            # Panel derecho → menú a la izquierda del panel.
+            pos_x = self.panel_x - win_w
+            pos_y = self.panel_y - (win_h // 2)
+
+        else:
+            # Orientación desconocida → fallback.
+            pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
+            pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
+
+        # Evitar que el menú se salga de los límites del monitor.
+        pos_x = max(monitor_geom.x, min(pos_x, monitor_geom.x + monitor_geom.width - win_w))
+        pos_y = max(monitor_geom.y, min(pos_y, monitor_geom.y + monitor_geom.height - win_h))
+
+        print(
+            f"[DEBUG] POSICIÓN CALCULADA: "
+            f"x={pos_x}, y={pos_y}, "
+            f"ancho={win_w}, alto={win_h}, "
+            f"panel_position={self.panel_position}"
+    )
 
         self.move(pos_x, pos_y)
 
@@ -468,6 +567,16 @@ class QuickMenuWindow(Gtk.Window):
         self.refresh_and_show()
 
     def _on_open_app(self, btn):
-        self.hide_animated()
+        self._release_grab()
+        self.hide()
         if self.on_open_main_window_callback:
             self.on_open_main_window_callback()
+
+    def _on_quit_app(self, btn):
+        print("[DEBUG] BOTÓN SALIR PRESIONADO")
+        self.hide_animated()
+
+        print(f"[DEBUG] CALLBACK SALIDA = {self.on_quit_app_callback}")
+
+        if self.on_quit_app_callback:
+            self.on_quit_app_callback()

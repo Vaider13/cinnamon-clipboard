@@ -14,15 +14,17 @@ gi.require_version("GLib", "2.0")
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 
 from .database import HistoryDatabase
+from .settings import SettingsManager
 
 
 class ClipboardManager:
     """Gestiona la comunicación con el portapapeles en GTK3 con deduplicación, almacenamiento permanente e integración SQLite."""
 
-    def __init__(self, max_history=20):
+    def __init__(self):
+        self.settings = SettingsManager()
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         self.change_count = 0
-        self.max_history = max_history
+        self.max_history = self.settings.get("max_history")
 
         self._debounce_timer_id = None
         self._last_content_signature = None
@@ -106,74 +108,80 @@ class ClipboardManager:
             self.is_self_copying = False
             return False
 
+        # VERIFICACIÓN: MODO PRIVADO / GUARDAR HISTORIAL DESACTIVADO
+        if not self.settings.get("enable_history"):
+            return False
+
         # -----------------------------------------------------------------
         # PRIORIDAD 1: ARCHIVOS Y CARPETAS (ej. copiados desde Nemo)
         # -----------------------------------------------------------------
-        res = self.clipboard.wait_for_targets()
-        if res:
-            targets = res[1] if isinstance(res, tuple) and len(res) == 2 else res
-            target_names = []
+        if self.settings.get("save_files"):
+            res = self.clipboard.wait_for_targets()
+            if res:
+                targets = res[1] if isinstance(res, tuple) and len(res) == 2 else res
+                target_names = []
 
-            if isinstance(targets, (list, tuple)):
-                for target in targets:
-                    if hasattr(target, "name"):
-                        target_names.append(target.name())
-                    elif isinstance(target, Gdk.Atom):
-                        target_names.append(Gdk.Atom.name(target))
+                if isinstance(targets, (list, tuple)):
+                    for target in targets:
+                        if hasattr(target, "name"):
+                            target_names.append(target.name())
+                        elif isinstance(target, Gdk.Atom):
+                            target_names.append(Gdk.Atom.name(target))
 
-            if "text/uri-list" in target_names or "x-special/gnome-copied-files" in target_names:
-                uri_data = self._read_uri_list()
-                if uri_data:
-                    file_paths = uri_data["paths"]
-                    signature = ("files", tuple(sorted(file_paths)))
+                if "text/uri-list" in target_names or "x-special/gnome-copied-files" in target_names:
+                    uri_data = self._read_uri_list()
+                    if uri_data:
+                        file_paths = uri_data["paths"]
+                        signature = ("files", tuple(sorted(file_paths)))
 
-                    if signature != self._last_content_signature:
-                        self._last_content_signature = signature
-                        self.change_count += 1
+                        if signature != self._last_content_signature:
+                            self._last_content_signature = signature
+                            self.change_count += 1
 
-                        preview_text = self._format_files_preview(file_paths)
-                        item = {
-                            "type": "files",
-                            "data": file_paths,
-                            "preview": preview_text,
-                            "pinned": False
-                        }
-                        self._add_to_history(item)
-                        print(f"[EVENTO #{self.change_count}] ARCHIVOS: {preview_text}")
-                        return False
+                            preview_text = self._format_files_preview(file_paths)
+                            item = {
+                                "type": "files",
+                                "data": file_paths,
+                                "preview": preview_text,
+                                "pinned": False
+                            }
+                            self._add_to_history(item)
+                            print(f"[EVENTO #{self.change_count}] ARCHIVOS: {preview_text}")
+                            return False
 
         # -----------------------------------------------------------------
         # PRIORIDAD 2: IMÁGENES
         # -----------------------------------------------------------------
-        pixbuf = self.clipboard.wait_for_image()
-        if pixbuf:
-            image_bytes = pixbuf.get_pixels()
-            img_hash = hashlib.sha256(image_bytes).hexdigest()
-            w, h = pixbuf.get_width(), pixbuf.get_height()
+        if self.settings.get("save_images"):
+            pixbuf = self.clipboard.wait_for_image()
+            if pixbuf:
+                image_bytes = pixbuf.get_pixels()
+                img_hash = hashlib.sha256(image_bytes).hexdigest()
+                w, h = pixbuf.get_width(), pixbuf.get_height()
 
-            signature = ("image", w, h, img_hash)
+                signature = ("image", w, h, img_hash)
 
-            if signature != self._last_content_signature:
-                self._last_content_signature = signature
-                self.change_count += 1
+                if signature != self._last_content_signature:
+                    self._last_content_signature = signature
+                    self.change_count += 1
 
-                scaled_pixbuf = self._scale_pixbuf(pixbuf, target_size=140)
+                    scaled_pixbuf = self._scale_pixbuf(pixbuf, target_size=140)
 
-                saved_file_path = self.data_media_dir / f"{w}x{h}_{img_hash}.png"
-                if not saved_file_path.exists():
-                    pixbuf.savev(str(saved_file_path), "png", [], [])
+                    saved_file_path = self.data_media_dir / f"{w}x{h}_{img_hash}.png"
+                    if not saved_file_path.exists():
+                        pixbuf.savev(str(saved_file_path), "png", [], [])
 
-                item = {
-                    "type": "image",
-                    "data": str(saved_file_path),
-                    "data_path": str(saved_file_path),
-                    "pixbuf": scaled_pixbuf,
-                    "preview": f"Imagen ({w}x{h} px)",
-                    "pinned": False
-                }
-                self._add_to_history(item)
-                print(f"[EVENTO #{self.change_count}] IMAGEN: {w}x{h} px [Hash: {img_hash[:8]}]")
-                return False
+                    item = {
+                        "type": "image",
+                        "data": str(saved_file_path),
+                        "data_path": str(saved_file_path),
+                        "pixbuf": scaled_pixbuf,
+                        "preview": f"Imagen ({w}x{h} px)",
+                        "pinned": False
+                    }
+                    self._add_to_history(item)
+                    print(f"[EVENTO #{self.change_count}] IMAGEN: {w}x{h} px [Hash: {img_hash[:8]}]")
+                    return False
 
         # -----------------------------------------------------------------
         # PRIORIDAD 3: TEXTO PLANO
@@ -287,6 +295,7 @@ class ClipboardManager:
 
         self.history.insert(insert_idx, item)
 
+        self.max_history = self.settings.get("max_history")
         if len(self.history) > self.max_history:
             # Eliminar el elemento no anclado más viejo
             for i in range(len(self.history) - 1, -1, -1):

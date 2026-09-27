@@ -7,6 +7,8 @@ gi.require_version("GdkPixbuf", "2.0")
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
+from .preferences_window import PreferencesWindow
+
 
 class MainWindow(Gtk.Window):
     """Ventana principal de gestión del historial del portapapeles."""
@@ -16,6 +18,7 @@ class MainWindow(Gtk.Window):
 
         self.clipboard_manager = clipboard_manager
         self.current_filter_type = "ALL"  # ALL, text, image, files
+        self.pref_window = None
 
         self.set_default_size(680, 520)
         self.set_position(Gtk.WindowPosition.CENTER)
@@ -86,10 +89,25 @@ class MainWindow(Gtk.Window):
         btn_clear_all.connect("clicked", self._on_clear_all)
         bottom_box.pack_start(btn_clear_all, False, False, 0)
 
+        btn_pref = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
+        btn_pref.set_tooltip_text("Preferencias")
+        btn_pref.connect("clicked", self._open_preferences)
+        bottom_box.pack_end(btn_pref, False, False, 0)
+
         main_box.pack_start(bottom_box, False, False, 0)
 
         # Cargar datos iniciales
         self.refresh_list()
+
+    def _open_preferences(self, btn):
+        if self.pref_window is None or not self.pref_window.get_visible():
+            self.pref_window = PreferencesWindow(
+                self.clipboard_manager.settings,
+                self.clipboard_manager
+            )
+            self.pref_window.set_transient_for(self)
+        else:
+            self.pref_window.present()
 
     def _on_destroy(self, widget):
         """Remueve la suscripción cuando se cierra la ventana."""
@@ -231,7 +249,7 @@ class MainWindow(Gtk.Window):
         elif item_type == "files":
             self.clipboard_manager.set_files(item["data"])
 
-        # Promover elemento arriba de los no anclados
+        # Promover elemento arriba de su respectivo grupo
         self.clipboard_manager.promote_item(item["id"])
 
     def _on_delete_item(self, item_id):
