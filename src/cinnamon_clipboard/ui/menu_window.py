@@ -42,13 +42,78 @@ class QuickMenuWindow(Gtk.Window):
         self.main_box.set_margin_end(8)
         frame.add(self.main_box)
 
+        # 1. Barra de búsqueda estática
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.set_placeholder_text("Buscar...")
+        self.search_entry.connect("search-changed", self._on_search_changed)
+        self.main_box.pack_start(self.search_entry, False, False, 0)
+
+        # 2. Área de lista scrolleable
+        self.scrolled = Gtk.ScrolledWindow()
+        self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scrolled.set_propagate_natural_height(True)
+
+        self.list_box = Gtk.ListBox()
+        self.list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.list_box.connect("row-activated", self._on_row_activated)
+        self.list_box.set_filter_func(self._filter_list_func)
+        self.scrolled.add(self.list_box)
+
+        self.main_box.pack_start(self.scrolled, True, True, 0)
+
+        # 3. Separador e interior
+        self.separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.main_box.pack_start(self.separator, False, False, 0)
+
+        self.bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        
+        self.btn_clear = Gtk.Button(label="Vaciar todo")
+        self.btn_clear.connect("clicked", self._on_clear_all)
+        self.bottom_box.pack_start(self.btn_clear, False, False, 0)
+
+        spacer = Gtk.Box()
+        self.bottom_box.pack_start(spacer, True, True, 0)
+
+        if self.on_open_main_window_callback:
+            btn_app = Gtk.Button(label="Abrir aplicación")
+            btn_app.connect("clicked", self._on_open_app)
+            self.bottom_box.pack_end(btn_app, False, False, 0)
+
+        self.main_box.pack_start(self.bottom_box, False, False, 0)
+
         self._fade_timer_id = None
         self._seat_grabbed = False
+
+        # Suscribir a eventos del historial para actualizar en tiempo real
+        self.clipboard_manager.add_history_listener(self._on_history_updated_external)
 
         # Eventos de teclado y clics
         self.connect("key-press-event", self._on_key_press)
         self.connect("button-press-event", self._on_button_press)
         self.connect("focus-out-event", self._on_focus_out)
+
+    def _filter_list_func(self, row):
+        """Filtra dinámicamente las filas sin reconstruir los widgets."""
+        query = self.search_entry.get_text().strip().lower()
+        if not query:
+            return True
+
+        item = getattr(row, "item_data", None)
+        if not item:
+            return True
+
+        preview = str(item.get("preview", "")).lower()
+        data_str = str(item.get("data", "")).lower()
+        return query in preview or query in data_str
+
+    def _on_search_changed(self, entry):
+        """Aplica el filtro nativo sin tocar la memoria de GTK."""
+        self.list_box.invalidate_filter()
+
+    def _on_history_updated_external(self):
+        """Si la ventana está visible, la refresca ante cambios externos."""
+        if self.get_visible():
+            self.refresh_and_show()
 
     def toggle_window(self):
         """Abre o cierra la ventana desplegable."""
@@ -110,8 +175,8 @@ class QuickMenuWindow(Gtk.Window):
         screen = Gdk.Screen.get_default()
         monitor_geom = screen.get_monitor_geometry(0)
 
-        # Límite Máximo Rígido: 360px o ~30% del alto de la pantalla
-        max_allowed_height = min(360, int(monitor_geom.height * 0.30))
+        # Límite Máximo Ampliado: 500px o ~45% del alto de la pantalla
+        max_allowed_height = min(500, int(monitor_geom.height * 0.45))
 
         _, req_height = self.get_preferred_height()
 
@@ -124,66 +189,39 @@ class QuickMenuWindow(Gtk.Window):
         self.move(pos_x, pos_y)
 
     def refresh_and_show(self):
-        """Reconstruye el contenido, limita la altura de forma estricta y muestra el menú."""
-        for child in self.main_box.get_children():
-            self.main_box.remove(child)
+        """Puebla o actualiza la lista de forma segura y muestra el menú."""
+        for child in self.list_box.get_children():
+            self.list_box.remove(child)
 
         history = self.clipboard_manager.history
 
         if not history:
-            empty_label = Gtk.Label(label="Historial vacío")
-            empty_label.set_margin_top(16)
-            empty_label.set_margin_bottom(16)
-            self.main_box.pack_start(empty_label, False, False, 0)
+            self.btn_clear.set_sensitive(False)
         else:
+            self.btn_clear.set_sensitive(True)
+
             screen = Gdk.Screen.get_default()
             monitor_geom = screen.get_monitor_geometry(0)
-            max_height_limit = min(320, int(monitor_geom.height * 0.28))
-
-            scrolled = Gtk.ScrolledWindow()
-            scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-            scrolled.set_propagate_natural_height(True)
-            scrolled.set_max_content_height(max_height_limit - 50)
-
-            list_box = Gtk.ListBox()
-            list_box.set_selection_mode(Gtk.SelectionMode.SINGLE)
-            list_box.connect("row-activated", self._on_row_activated)
-            scrolled.add(list_box)
+            max_height_limit = min(460, int(monitor_geom.height * 0.42))
+            self.scrolled.set_max_content_height(max_height_limit - 50)
 
             size_group_btn = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
             for item in history:
                 row_item = self._create_item_row(item, size_group_btn)
-                list_box.add(row_item)
+                self.list_box.add(row_item)
 
-            self.main_box.pack_start(scrolled, True, True, 0)
-
-        self.main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
-
-        # Barra inferior
-        bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        if history:
-            btn_clear = Gtk.Button(label="Vaciar todo")
-            btn_clear.connect("clicked", self._on_clear_all)
-            bottom_box.pack_start(btn_clear, False, False, 0)
-
-        spacer = Gtk.Box()
-        bottom_box.pack_start(spacer, True, True, 0)
-
-        if self.on_open_main_window_callback:
-            btn_app = Gtk.Button(label="Abrir aplicación")
-            btn_app.connect("clicked", self._on_open_app)
-            bottom_box.pack_end(btn_app, False, False, 0)
-
-        self.main_box.pack_start(bottom_box, False, False, 0)
-
+        self.list_box.invalidate_filter()
         self.show_all()
         self._update_position()
-       
+
         if self.get_window():
             self.get_window().raise_()
 
         self.present()
+
+        # Posicionar cursor en el buscador si está abierto
+        self.search_entry.grab_focus()
 
         # Intentar capturar el Seat. Si Cinnamon lo retiene, se reintentará mediante GLib timeout
         GLib.timeout_add(30, self._grab_seat)
@@ -237,7 +275,7 @@ class QuickMenuWindow(Gtk.Window):
         return False
 
     def _create_item_row(self, item, size_group_btn):
-        """Crea una fila del historial con vista previa limpia y alineación estricta de la X."""
+        """Crea una fila del historial con vista previa limpia y alineación estricta."""
         list_row = Gtk.ListBoxRow()
         list_row.item_data = item
 
@@ -259,6 +297,7 @@ class QuickMenuWindow(Gtk.Window):
                 label = Gtk.Label(label="[Imagen]", xalign=0)
                 grid.attach(label, 0, 0, 1, 1)
 
+            # Espaciador en columna 1 con hexpand=True
             spacer = Gtk.Box()
             spacer.set_hexpand(True)
             size_group_btn.add_widget(spacer)
@@ -342,14 +381,31 @@ class QuickMenuWindow(Gtk.Window):
                 size_group_btn.add_widget(spacer)
                 grid.attach(spacer, 1, 0, 1, 1)
 
-        # BOTÓN ELIMINAR (FIJO EN COLUMNA 2)
+        # BOTÓN ANCLAR / PIN (COLUMNA 2)
+        is_pinned = item.get("pinned", False)
+        btn_pin = Gtk.Button.new_from_icon_name("view-pin-symbolic", Gtk.IconSize.BUTTON)
+        btn_pin.set_relief(Gtk.ReliefStyle.NONE)
+        btn_pin.set_valign(Gtk.Align.CENTER)
+        btn_pin.set_halign(Gtk.Align.CENTER)
+
+        if not is_pinned:
+            btn_pin.set_opacity(0.30)
+        else:
+            btn_pin.set_opacity(1.0)
+
+        btn_pin.set_tooltip_text("Desanclar" if is_pinned else "Anclar al principio")
+        btn_pin.connect("clicked", lambda b, i_id=item["id"]: self._on_toggle_pin(i_id))
+
+        grid.attach(btn_pin, 2, 0, 1, 1)
+
+        # BOTÓN ELIMINAR (COLUMNA 3)
         btn_delete = Gtk.Button.new_from_icon_name("window-close-symbolic", Gtk.IconSize.BUTTON)
         btn_delete.set_relief(Gtk.ReliefStyle.NONE)
         btn_delete.set_valign(Gtk.Align.CENTER)
         btn_delete.set_halign(Gtk.Align.CENTER)
         btn_delete.connect("clicked", lambda b, i_id=item["id"]: self._on_delete_item(i_id))
 
-        grid.attach(btn_delete, 2, 0, 1, 1)
+        grid.attach(btn_delete, 3, 0, 1, 1)
 
         list_row.add(grid)
         return list_row
@@ -389,7 +445,13 @@ class QuickMenuWindow(Gtk.Window):
             self.clipboard_manager.set_files(item["data"])
             print(f"[COPIADO] Lista de {len(item['data'])} archivo(s) puesta en portapapeles.")
 
+        # Promover elemento arriba de su respectivo grupo
+        self.clipboard_manager.promote_item(item["id"])
         self.hide_animated()
+
+    def _on_toggle_pin(self, item_id):
+        self.clipboard_manager.toggle_pin_item(item_id)
+        self.refresh_and_show()
 
     def _on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:

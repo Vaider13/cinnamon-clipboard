@@ -28,6 +28,9 @@ class ClipboardManager:
         self._last_content_signature = None
         self.is_self_copying = False  # Bandera para evitar reinsertar ítems copiados desde el historial
 
+        # Suscriptores para notificar cambios en la interfaz en tiempo real
+        self._on_history_changed_callbacks = []
+
         # Directorio de datos permanente para imágenes (junto a la base de datos)
         self.data_media_dir = Path.home() / ".local" / "share" / "cinnamon-clipboard" / "media"
         self.data_media_dir.mkdir(parents=True, exist_ok=True)
@@ -36,18 +39,53 @@ class ClipboardManager:
         self.db = HistoryDatabase()
         self.history = self._load_history_from_db()
 
+    def add_history_listener(self, callback):
+        """Registra una función para ser notificada cuando cambie el historial."""
+        if callback not in self._on_history_changed_callbacks:
+            self._on_history_changed_callbacks.append(callback)
+
+    def remove_history_listener(self, callback):
+        """Elimina una función suscripta de las notificaciones de cambios."""
+        if callback in self._on_history_changed_callbacks:
+            self._on_history_changed_callbacks.remove(callback)
+
+    def _notify_history_changed(self):
+        """Notifica a todos los suscriptores en el hilo principal de GTK."""
+        for cb in list(self._on_history_changed_callbacks):
+            GLib.idle_add(cb)
+
     def _load_history_from_db(self):
-        """Carga el historial guardado en SQLite y regenera los pixbufs de imágenes si corresponden."""
-        items = self.db.load_history(limit=self.max_history)
-        for item in items:
-            if item.get("type") == "image" and item.get("data_path"):
-                if os.path.exists(item["data_path"]):
+        """Carga el historial guardado en SQLite y reconstruye los objetos para que la interfaz los dibuje correctamente."""
+        raw_items = self.db.load_history(limit=self.max_history)
+        processed_items = []
+
+        for item in raw_items:
+            item_type = item.get("type")
+
+            # 1. IMÁGENES
+            if item_type == "image":
+                data_path = item.get("data_path")
+                if data_path and os.path.exists(data_path):
                     try:
-                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(data_path)
                         item["pixbuf"] = self._scale_pixbuf(pixbuf, target_size=140)
                     except Exception as e:
                         print(f"[ADVERTENCIA] No se pudo cargar la imagen guardada: {e}")
-        return items
+
+            # 2. ARCHIVOS
+            elif item_type == "files":
+                if not item.get("preview") and isinstance(item.get("data"), list):
+                    item["preview"] = self._format_files_preview(item["data"])
+
+            # 3. TEXTO
+            elif item_type == "text":
+                if not item.get("preview") and item.get("data"):
+                    text = item["data"]
+                    item["preview"] = text[:60].replace("\n", " ") + ("..." if len(text) > 60 else "")
+
+            processed_items.append(item)
+
+        return processed_items
 
     def connect_to_changes(self):
         """Conecta la señal de cambio de dueño del portapapeles."""
@@ -97,7 +135,8 @@ class ClipboardManager:
                         item = {
                             "type": "files",
                             "data": file_paths,
-                            "preview": preview_text
+                            "preview": preview_text,
+                            "pinned": False
                         }
                         self._add_to_history(item)
                         print(f"[EVENTO #{self.change_count}] ARCHIVOS: {preview_text}")
@@ -129,7 +168,8 @@ class ClipboardManager:
                     "data": str(saved_file_path),
                     "data_path": str(saved_file_path),
                     "pixbuf": scaled_pixbuf,
-                    "preview": f"Imagen ({w}x{h} px)"
+                    "preview": f"Imagen ({w}x{h} px)",
+                    "pinned": False
                 }
                 self._add_to_history(item)
                 print(f"[EVENTO #{self.change_count}] IMAGEN: {w}x{h} px [Hash: {img_hash[:8]}]")
@@ -148,7 +188,8 @@ class ClipboardManager:
                 item = {
                     "type": "text",
                     "data": text,
-                    "preview": text[:60].replace("\n", " ") + ("..." if len(text) > 60 else "")
+                    "preview": text[:60].replace("\n", " ") + ("..." if len(text) > 60 else ""),
+                    "pinned": False
                 }
                 self._add_to_history(item)
                 print(f"[EVENTO #{self.change_count}] TEXTO: {item['preview']}")
@@ -227,7 +268,7 @@ class ClipboardManager:
         return pixbuf.scale_simple(new_w, new_h, GdkPixbuf.InterpType.BILINEAR)
 
     def _add_to_history(self, item):
-        """Guarda en la base de datos y añade al historial en memoria."""
+        """Guarda en la base de datos, añade al historial en memoria y notifica a las ventanas abiertas."""
         db_id = self.db.add_item(
             item_type=item["type"],
             data=item["data"],
@@ -235,16 +276,73 @@ class ClipboardManager:
             data_path=item.get("data_path")
         )
         item["id"] = db_id
-        self.history.insert(0, item)
+
+        # Insertar después del último elemento anclado
+        insert_idx = 0
+        for idx, h_item in enumerate(self.history):
+            if h_item.get("pinned", False):
+                insert_idx = idx + 1
+            else:
+                break
+
+        self.history.insert(insert_idx, item)
 
         if len(self.history) > self.max_history:
-            removed_item = self.history.pop()
-            self.db.delete_item(removed_item["id"])
-            if removed_item.get("type") == "image" and "data_path" in removed_item:
-                path = removed_item["data_path"]
-                if not any(i.get("data_path") == path for i in self.history):
-                    if os.path.exists(path):
-                        os.remove(path)
+            # Eliminar el elemento no anclado más viejo
+            for i in range(len(self.history) - 1, -1, -1):
+                if not self.history[i].get("pinned", False):
+                    removed_item = self.history.pop(i)
+                    self.db.delete_item(removed_item["id"])
+                    if removed_item.get("type") == "image" and "data_path" in removed_item:
+                        path = removed_item["data_path"]
+                        if not any(item.get("data_path") == path for item in self.history):
+                            if os.path.exists(path):
+                                os.remove(path)
+                    break
+
+        self._notify_history_changed()
+
+    def promote_item(self, item_id):
+        """Mueve un elemento al principio de su respectivo grupo (anclados o no anclados)."""
+        target_item = None
+        for item in self.history:
+            if item["id"] == item_id:
+                target_item = item
+                break
+
+        if not target_item:
+            return
+
+        # Quitar de su posición actual
+        self.history.remove(target_item)
+
+        if target_item.get("pinned", False):
+            # Si SÍ está anclado: sube arriba de todo (posición 0)
+            self.history.insert(0, target_item)
+        else:
+            # Si NO está anclado: sube justo debajo de todos los anclados
+            insert_idx = 0
+            for idx, h_item in enumerate(self.history):
+                if h_item.get("pinned", False):
+                    insert_idx = idx + 1
+                else:
+                    break
+            self.history.insert(insert_idx, target_item)
+
+        self._notify_history_changed()
+
+    def toggle_pin_item(self, item_id):
+        """Alterna el estado fijado/anclado de un elemento y reordena el historial."""
+        for item in self.history:
+            if item["id"] == item_id:
+                new_state = not item.get("pinned", False)
+                item["pinned"] = new_state
+                self.db.toggle_pin(item_id, new_state)
+                break
+
+        # Reordenar: los anclados primero
+        self.history.sort(key=lambda x: (not x.get("pinned", False), -x["id"]))
+        self._notify_history_changed()
 
     def remove_item(self, item_id):
         """Elimina un elemento del historial en RAM y en SQLite."""
@@ -260,15 +358,20 @@ class ClipboardManager:
                     if os.path.exists(path):
                         os.remove(path)
 
+        self._notify_history_changed()
+
     def clear_history(self):
-        """Vacía el historial en RAM, las imágenes guardadas y la base de datos SQLite."""
+        """Vacía el historial no anclado en RAM, sus imágenes y la base de datos."""
+        items_to_keep = []
         for item in self.history:
-            if item.get("type") == "image" and "data_path" in item:
-                if os.path.exists(item["data_path"]):
-                    os.remove(item["data_path"])
+            if item.get("pinned", False):
+                items_to_keep.append(item)
+            else:
+                if item.get("type") == "image" and "data_path" in item:
+                    if os.path.exists(item["data_path"]):
+                        os.remove(item["data_path"])
 
-        self.history.clear()
-        self.db.clear_all()
+        self.history = items_to_keep
+        self.db.clear_all(keep_pinned=True)
         self._last_content_signature = None
-
-        
+        self._notify_history_changed()
