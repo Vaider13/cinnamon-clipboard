@@ -13,23 +13,41 @@ gi.require_version("GLib", "2.0")
 
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 
+from .database import HistoryDatabase
+
 
 class ClipboardManager:
-    """Gestiona la comunicación con el portapapeles en GTK3 con deduplicación y caché de imágenes."""
+    """Gestiona la comunicación con el portapapeles en GTK3 con deduplicación, almacenamiento permanente e integración SQLite."""
 
     def __init__(self, max_history=20):
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         self.change_count = 0
         self.max_history = max_history
-        self.history = []
 
         self._debounce_timer_id = None
         self._last_content_signature = None
         self.is_self_copying = False  # Bandera para evitar reinsertar ítems copiados desde el historial
 
-        # Directorio de caché en disco para imágenes
-        self.cache_dir = Path.home() / ".cache" / "cinnamon-clipboard" / "images"
-        self.cache_dir.mkdir(parents=True, exist_ok=True)
+        # Directorio de datos permanente para imágenes (junto a la base de datos)
+        self.data_media_dir = Path.home() / ".local" / "share" / "cinnamon-clipboard" / "media"
+        self.data_media_dir.mkdir(parents=True, exist_ok=True)
+
+        # Base de datos SQLite
+        self.db = HistoryDatabase()
+        self.history = self._load_history_from_db()
+
+    def _load_history_from_db(self):
+        """Carga el historial guardado en SQLite y regenera los pixbufs de imágenes si corresponden."""
+        items = self.db.load_history(limit=self.max_history)
+        for item in items:
+            if item.get("type") == "image" and item.get("data_path"):
+                if os.path.exists(item["data_path"]):
+                    try:
+                        pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
+                        item["pixbuf"] = self._scale_pixbuf(pixbuf, target_size=140)
+                    except Exception as e:
+                        print(f"[ADVERTENCIA] No se pudo cargar la imagen guardada: {e}")
+        return items
 
     def connect_to_changes(self):
         """Conecta la señal de cambio de dueño del portapapeles."""
@@ -77,7 +95,6 @@ class ClipboardManager:
 
                         preview_text = self._format_files_preview(file_paths)
                         item = {
-                            "id": self.change_count,
                             "type": "files",
                             "data": file_paths,
                             "preview": preview_text
@@ -95,7 +112,6 @@ class ClipboardManager:
             img_hash = hashlib.sha256(image_bytes).hexdigest()
             w, h = pixbuf.get_width(), pixbuf.get_height()
 
-            # AJUSTE B: Firma enriquecida con ancho, alto y hash
             signature = ("image", w, h, img_hash)
 
             if signature != self._last_content_signature:
@@ -104,14 +120,14 @@ class ClipboardManager:
 
                 scaled_pixbuf = self._scale_pixbuf(pixbuf, target_size=140)
 
-                cached_file_path = self.cache_dir / f"{w}x{h}_{img_hash}.png"
-                if not cached_file_path.exists():
-                    pixbuf.savev(str(cached_file_path), "png", [], [])
+                saved_file_path = self.data_media_dir / f"{w}x{h}_{img_hash}.png"
+                if not saved_file_path.exists():
+                    pixbuf.savev(str(saved_file_path), "png", [], [])
 
                 item = {
-                    "id": self.change_count,
                     "type": "image",
-                    "data_path": str(cached_file_path),
+                    "data": str(saved_file_path),
+                    "data_path": str(saved_file_path),
                     "pixbuf": scaled_pixbuf,
                     "preview": f"Imagen ({w}x{h} px)"
                 }
@@ -130,7 +146,6 @@ class ClipboardManager:
                 self.change_count += 1
 
                 item = {
-                    "id": self.change_count,
                     "type": "text",
                     "data": text,
                     "preview": text[:60].replace("\n", " ") + ("..." if len(text) > 60 else "")
@@ -156,7 +171,6 @@ class ClipboardManager:
             )
             process.communicate(input=gnome_payload.encode("utf-8"))
 
-            # AJUSTE A: Solo marcar como auto-copiado si xclip no lanzó excepción
             self.is_self_copying = True
             print(f"[ARCHIVOS] {len(uris)} elemento(s) configurado(s) en el portapapeles.")
         except Exception as e:
@@ -213,9 +227,19 @@ class ClipboardManager:
         return pixbuf.scale_simple(new_w, new_h, GdkPixbuf.InterpType.BILINEAR)
 
     def _add_to_history(self, item):
+        """Guarda en la base de datos y añade al historial en memoria."""
+        db_id = self.db.add_item(
+            item_type=item["type"],
+            data=item["data"],
+            preview=item["preview"],
+            data_path=item.get("data_path")
+        )
+        item["id"] = db_id
         self.history.insert(0, item)
+
         if len(self.history) > self.max_history:
             removed_item = self.history.pop()
+            self.db.delete_item(removed_item["id"])
             if removed_item.get("type") == "image" and "data_path" in removed_item:
                 path = removed_item["data_path"]
                 if not any(i.get("data_path") == path for i in self.history):
@@ -223,8 +247,11 @@ class ClipboardManager:
                         os.remove(path)
 
     def remove_item(self, item_id):
+        """Elimina un elemento del historial en RAM y en SQLite."""
         removed_items = [i for i in self.history if i["id"] == item_id]
         self.history = [i for i in self.history if i["id"] != item_id]
+
+        self.db.delete_item(item_id)
 
         for item in removed_items:
             if item.get("type") == "image" and "data_path" in item:
@@ -234,10 +261,15 @@ class ClipboardManager:
                         os.remove(path)
 
     def clear_history(self):
+        """Vacía el historial en RAM, las imágenes guardadas y la base de datos SQLite."""
         for item in self.history:
             if item.get("type") == "image" and "data_path" in item:
                 if os.path.exists(item["data_path"]):
                     os.remove(item["data_path"])
 
         self.history.clear()
+        self.db.clear_all()
         self._last_content_signature = None
+
+        git add .
+git commit -m "feat: integrar persistencia SQLite y almacenamiento permanente de imagenes"
