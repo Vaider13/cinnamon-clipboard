@@ -9,14 +9,17 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from .preferences_window import PreferencesWindow
 
+from .about_window import AboutWindow
+
 
 class MainWindow(Gtk.Window):
     """Ventana principal de gestión del historial del portapapeles."""
 
-    def __init__(self, clipboard_manager):
+    def __init__(self, clipboard_manager, on_quit_app_callback=None):
         super().__init__(title="Gestor de Portapapeles")
 
         self.clipboard_manager = clipboard_manager
+        self.on_quit_app_callback = on_quit_app_callback
         self.current_filter_type = "ALL"  # ALL, text, image, files
         self.pref_window = None
 
@@ -89,15 +92,32 @@ class MainWindow(Gtk.Window):
         btn_clear_all.connect("clicked", self._on_clear_all)
         bottom_box.pack_start(btn_clear_all, False, False, 0)
 
+        btn_about = Gtk.Button.new_from_icon_name("help-about-symbolic", Gtk.IconSize.BUTTON)
+        btn_about.set_tooltip_text("Acerca de")
+        btn_about.connect("clicked", self._open_about)
+        bottom_box.pack_end(btn_about, False, False, 0)
+
         btn_pref = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
         btn_pref.set_tooltip_text("Preferencias")
         btn_pref.connect("clicked", self._open_preferences)
         bottom_box.pack_end(btn_pref, False, False, 0)
 
+        btn_quit = Gtk.Button(label="Salir")
+        btn_quit.set_tooltip_text("Cerrar Cinnamon Clipboard")
+        btn_quit.connect("clicked", self._on_quit_clicked)
+        bottom_box.pack_end(btn_quit, False, False, 0)
+
         main_box.pack_start(bottom_box, False, False, 0)
+
+
 
         # Cargar datos iniciales
         self.refresh_list()
+
+    def _open_about(self, btn):
+        """Abre la ventana Acerca de y la mantiene asociada a la ventana principal."""
+        about_window = AboutWindow(parent=self)
+        about_window.show_all()
 
     def _open_preferences(self, btn):
         if self.pref_window is None or not self.pref_window.get_visible():
@@ -169,7 +189,7 @@ class MainWindow(Gtk.Window):
             box.pack_start(info_label, True, True, 0)
 
         elif item_type == "files":
-            icon = Gtk.Image.new_from_icon_name("folder-documents-symbolic", Gtk.IconSize.DND)
+            icon = Gtk.Image.new_from_icon_name("folder-documents-symbolic", Gtk.IconSize.BUTTON)
             icon.set_valign(Gtk.Align.CENTER)
             box.pack_start(icon, False, False, 0)
 
@@ -179,7 +199,7 @@ class MainWindow(Gtk.Window):
             box.pack_start(info_label, True, True, 0)
 
         else:  # text
-            icon = Gtk.Image.new_from_icon_name("edit-paste-symbolic", Gtk.IconSize.DND)
+            icon = Gtk.Image.new_from_icon_name("edit-paste-symbolic", Gtk.IconSize.BUTTON)
             icon.set_valign(Gtk.Align.CENTER)
             box.pack_start(icon, False, False, 0)
 
@@ -257,3 +277,8 @@ class MainWindow(Gtk.Window):
 
     def _on_clear_all(self, btn):
         self.clipboard_manager.clear_history()
+
+    def _on_quit_clicked(self, btn):
+        """Solicita a la aplicación principal el cierre completo."""
+        if self.on_quit_app_callback:
+            self.on_quit_app_callback()

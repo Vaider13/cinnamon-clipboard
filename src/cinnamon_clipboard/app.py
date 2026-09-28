@@ -33,7 +33,10 @@ class ClipboardApp(Gtk.Application):
     def open_main_window(self):
         """Abre la ventana principal con un solo clic o la trae al frente."""
         if self.main_window is None:
-            self.main_window = MainWindow(self.clipboard_manager)
+            self.main_window = MainWindow(
+                self.clipboard_manager,
+                on_quit_app_callback=self.quit_app,
+            )
             self.main_window.set_application(self)
             self.main_window.connect("destroy", self._on_main_window_destroyed)
             self.main_window.show_all()
@@ -108,6 +111,24 @@ class ClipboardApp(Gtk.Application):
     def do_activate(self):
         # Mantiene el proceso activo en segundo plano
         self.hold()
+
+        # Mostrar aviso si la configuración fue restaurada automáticamente
+        if self.clipboard_manager.settings.config_was_reset:
+            dialog = Gtk.MessageDialog(
+                parent=None,
+                flags=0,
+                message_type=Gtk.MessageType.WARNING,
+                buttons=Gtk.ButtonsType.OK,
+                text="Configuración restablecida",
+            )
+            dialog.format_secondary_text(
+                "El archivo de configuración contenía datos inválidos "
+                "y fue restablecido a los valores predeterminados."
+            )
+            dialog.run()
+            dialog.destroy()
+
+            self.clipboard_manager.settings.config_was_reset = False
 
         # 1. Menú desplegable del Tray
         if self.quick_menu is None:

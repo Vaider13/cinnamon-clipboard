@@ -45,15 +45,34 @@ class HistoryDatabase:
             conn.commit()
 
     def load_history(self, limit=50):
-        """Carga los registros: primero los anclados (pinned) y luego por ID descendente."""
+        """Carga todos los elementos anclados y hasta 'limit' elementos no anclados."""
         items = []
         with self._get_connection() as conn:
             cursor = conn.cursor()
+
             cursor.execute(
-                "SELECT id, item_type, data, preview, data_path, pinned FROM history ORDER BY pinned DESC, id DESC LIMIT ?",
+                """
+                SELECT id, item_type, data, preview, data_path, pinned
+                FROM history
+                WHERE pinned = 1
+                ORDER BY id DESC
+                """
+            )
+            pinned_rows = cursor.fetchall()
+
+            cursor.execute(
+                """
+                SELECT id, item_type, data, preview, data_path, pinned
+                FROM history
+                WHERE pinned = 0
+                ORDER BY id DESC
+                LIMIT ?
+                """,
                 (limit,)
             )
-            rows = cursor.fetchall()
+            normal_rows = cursor.fetchall()
+
+            rows = pinned_rows + normal_rows
 
             for row in rows:
                 db_id, item_type, raw_data, preview, data_path, pinned = row

@@ -232,7 +232,7 @@ class PreferencesWindow(Gtk.Window):
                 self.settings.set(k, v)
 
         # Actualizar valores en ClipboardManager
-        self.clipboard_manager.max_history = self.temp_settings["max_history"]
+        self.clipboard_manager.apply_max_history(self.temp_settings["max_history"])
 
         # Notificar atajo global a App
         if self.on_shortcut_changed_callback:

@@ -93,6 +93,26 @@ class ClipboardManager:
         """Conecta la señal de cambio de dueño del portapapeles."""
         self.clipboard.connect("owner-change", self._on_clipboard_changed)
 
+    def _is_clipboard_secret(self):
+        """Comprueba si la aplicación propietaria marca explícitamente el contenido como secreto."""
+        try:
+            target = Gdk.Atom.intern("x-kde-passwordManagerHint", False)
+            selection_data = self.clipboard.wait_for_contents(target)
+
+            if not selection_data:
+                return False
+
+            data = selection_data.get_data()
+            if not data:
+                return False
+
+            value = data.decode("utf-8", errors="ignore").strip().lower()
+            return value == "secret"
+
+        except Exception as e:
+            print(f"[ADVERTENCIA] No se pudo comprobar si el clipboard es secreto: {e}")
+            return False
+
     def _on_clipboard_changed(self, clipboard, event):
         """Aplica un debounce de 150 ms antes de procesar el contenido."""
         if self._debounce_timer_id is not None:
@@ -112,42 +132,58 @@ class ClipboardManager:
         if not self.settings.get("enable_history"):
             return False
 
+        if self._is_clipboard_secret():
+            print("[PRIVACIDAD] Contenido marcado como secreto. No se guardará en el historial.")
+            return False
+
         # -----------------------------------------------------------------
-        # PRIORIDAD 1: ARCHIVOS Y CARPETAS (ej. copiados desde Nemo)
+        # DETECTAR SI EL PORTAPAPELES CONTIENE ARCHIVOS O CARPETAS
         # -----------------------------------------------------------------
-        if self.settings.get("save_files"):
-            res = self.clipboard.wait_for_targets()
-            if res:
-                targets = res[1] if isinstance(res, tuple) and len(res) == 2 else res
-                target_names = []
+        res = self.clipboard.wait_for_targets()
+        if res:
+            targets = res[1] if isinstance(res, tuple) and len(res) == 2 else res
+            target_names = []
 
-                if isinstance(targets, (list, tuple)):
-                    for target in targets:
-                        if hasattr(target, "name"):
-                            target_names.append(target.name())
-                        elif isinstance(target, Gdk.Atom):
-                            target_names.append(Gdk.Atom.name(target))
+            if isinstance(targets, (list, tuple)):
+                for target in targets:
+                    if hasattr(target, "name"):
+                        target_names.append(target.name())
+                    elif isinstance(target, Gdk.Atom):
+                        target_names.append(Gdk.Atom.name(target))
 
-                if "text/uri-list" in target_names or "x-special/gnome-copied-files" in target_names:
-                    uri_data = self._read_uri_list()
-                    if uri_data:
-                        file_paths = uri_data["paths"]
-                        signature = ("files", tuple(sorted(file_paths)))
+            is_file_clipboard = (
+                "text/uri-list" in target_names
+                or "x-special/gnome-copied-files" in target_names
+            )
 
-                        if signature != self._last_content_signature:
-                            self._last_content_signature = signature
-                            self.change_count += 1
+            # -----------------------------------------------------------------
+            # ARCHIVOS Y CARPETAS
+            # -----------------------------------------------------------------
+            if is_file_clipboard:
+                # Si la captura de archivos está desactivada, ignorar
+                # completamente este contenido para evitar que se guarde como texto.
+                if not self.settings.get("save_files"):
+                    return False
 
-                            preview_text = self._format_files_preview(file_paths)
-                            item = {
-                                "type": "files",
-                                "data": file_paths,
-                                "preview": preview_text,
-                                "pinned": False
-                            }
-                            self._add_to_history(item)
-                            print(f"[EVENTO #{self.change_count}] ARCHIVOS: {preview_text}")
-                            return False
+                uri_data = self._read_uri_list()
+                if uri_data:
+                    file_paths = uri_data["paths"]
+                    signature = ("files", tuple(sorted(file_paths)))
+
+                    if signature != self._last_content_signature:
+                        self._last_content_signature = signature
+                        self.change_count += 1
+
+                        preview_text = self._format_files_preview(file_paths)
+                        item = {
+                            "type": "files",
+                            "data": file_paths,
+                            "preview": preview_text,
+                            "pinned": False
+                        }
+                        self._add_to_history(item)
+                        print(f"[EVENTO #{self.change_count}] ARCHIVOS: {preview_text}")
+                        return False
 
         # -----------------------------------------------------------------
         # PRIORIDAD 2: IMÁGENES
@@ -204,6 +240,7 @@ class ClipboardManager:
                 return False
 
         return False
+
 
     def set_files(self, file_paths):
         """Publica archivos en el portapapeles usando xclip con la cabecera x-special/gnome-copied-files requerida por Nemo."""
@@ -285,7 +322,7 @@ class ClipboardManager:
         )
         item["id"] = db_id
 
-        # Insertar después del último elemento anclado
+        # Insertar después del último elemento anclado.
         insert_idx = 0
         for idx, h_item in enumerate(self.history):
             if h_item.get("pinned", False):
@@ -296,18 +333,58 @@ class ClipboardManager:
         self.history.insert(insert_idx, item)
 
         self.max_history = self.settings.get("max_history")
-        if len(self.history) > self.max_history:
-            # Eliminar el elemento no anclado más viejo
+
+        # El límite se aplica únicamente a los elementos no anclados.
+        normal_items = [
+            history_item for history_item in self.history
+            if not history_item.get("pinned", False)
+        ]
+
+        if len(normal_items) > self.max_history:
+            # Eliminar el elemento no anclado más viejo.
             for i in range(len(self.history) - 1, -1, -1):
                 if not self.history[i].get("pinned", False):
                     removed_item = self.history.pop(i)
                     self.db.delete_item(removed_item["id"])
+
                     if removed_item.get("type") == "image" and "data_path" in removed_item:
                         path = removed_item["data_path"]
-                        if not any(item.get("data_path") == path for item in self.history):
+
+                        if not any(
+                            history_item.get("data_path") == path
+                            for history_item in self.history
+                        ):
                             if os.path.exists(path):
                                 os.remove(path)
+
                     break
+
+        self._notify_history_changed()
+
+    def apply_max_history(self, max_history):
+        """Aplica inmediatamente el nuevo límite eliminando los elementos normales que sobren."""
+        self.max_history = max_history
+
+        normal_items = [
+            item for item in self.history
+            if not item.get("pinned", False)
+        ]
+
+        while len(normal_items) > self.max_history:
+            removed_item = normal_items.pop()
+
+            self.history.remove(removed_item)
+            self.db.delete_item(removed_item["id"])
+
+            if removed_item.get("type") == "image" and "data_path" in removed_item:
+                path = removed_item["data_path"]
+
+                if not any(
+                    history_item.get("data_path") == path
+                    for history_item in self.history
+                ):
+                    if os.path.exists(path):
+                        os.remove(path)
 
         self._notify_history_changed()
 

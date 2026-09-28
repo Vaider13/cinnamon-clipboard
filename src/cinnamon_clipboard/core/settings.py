@@ -12,7 +12,7 @@ class SettingsManager:
         "save_images": True,
         "save_files": True,
         "enable_history": True,
-        "shortcut": "<Super>v",
+        "shortcut": "<Ctrl><Alt>v",
     }
 
     def __init__(self):
@@ -20,17 +20,45 @@ class SettingsManager:
         config_dir.mkdir(parents=True, exist_ok=True)
         self.config_path = config_dir / "config.json"
         self.settings = self.DEFAULTS.copy()
+        self.config_was_reset = False
         self.load()
 
     def load(self):
-        """Carga las configuraciones desde el disco, completando con valores por defecto si faltan claves."""
-        if self.config_path.exists():
-            try:
-                with open(self.config_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.settings.update(data)
-            except Exception as e:
-                print(f"[ERROR] No se pudo cargar config.json: {e}")
+        """Carga y valida la configuración, restaurando los valores predeterminados si es inválida."""
+        if not self.config_path.exists():
+            return
+
+        try:
+            with open(self.config_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            if not isinstance(data, dict):
+                raise ValueError("La configuración no contiene un objeto JSON válido.")
+
+            valid = True
+
+            if "max_history" in data and data["max_history"] not in (10, 25, 50):
+                valid = False
+
+            for key in ("autostart", "save_images", "save_files", "enable_history"):
+                if key in data and not isinstance(data[key], bool):
+                    valid = False
+
+            if "shortcut" in data and not isinstance(data["shortcut"], str):
+                valid = False
+
+            if not valid:
+                raise ValueError("Uno o más valores de configuración son inválidos.")
+
+            self.settings.update(data)
+
+        except Exception as e:
+            print(f"[ERROR] Configuración inválida: {e}")
+            print("[INFO] Restaurando configuración predeterminada.")
+
+            self.settings = self.DEFAULTS.copy()
+            self.config_was_reset = True
+            self.save()
 
     def save(self):
         """Guarda las configuraciones actuales en el archivo JSON."""
