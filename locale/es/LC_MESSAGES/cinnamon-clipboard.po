@@ -1,0 +1,191 @@
+# Spanish translations for PACKAGE package.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Pablo Quirco <quircopablo@gmail.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Cinnamon Clipboard 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-28 10:41-0300\n"
+"PO-Revision-Date: 2026-09-28 10:44-0300\n"
+"Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
+"Language-Team: Spanish <es@tp.org.es>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/cinnamon_clipboard/core/clipboard.py:216
+#, python-format
+msgid "Image (%(width)d×%(height)d px)"
+msgstr "Imagen (%(width)d×%(height)d px)"
+
+#: src/cinnamon_clipboard/core/clipboard.py:297
+#, python-format
+msgid "File: %(name)s"
+msgstr "Archivo: %(name)s"
+
+#: src/cinnamon_clipboard/core/clipboard.py:300
+#, python-format
+msgid "%(name)s and %(count)d more file(s)"
+msgstr "%(name)s y %(count)d archivo(s) más"
+
+#: src/cinnamon_clipboard/app.py:123
+msgid "Configuration restored"
+msgstr "Configuración restablecida"
+
+#: src/cinnamon_clipboard/app.py:126
+msgid ""
+"The configuration file contained invalid data and was reset to the default "
+"values."
+msgstr "El archivo de configuración contenía datos no válidos y se restableció a los valores "
+"predeterminados."
+
+#: src/cinnamon_clipboard/ui/about_window.py:21
+msgid "Clipboard manager for Linux desktops."
+msgstr "Gestor de portapapeles para escritorios Linux."
+
+#: src/cinnamon_clipboard/ui/menu_window.py:57
+msgid "Search..."
+msgstr "Buscar..."
+
+#: src/cinnamon_clipboard/ui/menu_window.py:80
+#: src/cinnamon_clipboard/ui/main_window.py:91
+msgid "Clear all"
+msgstr "Borrar todo"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:85
+#: src/cinnamon_clipboard/ui/main_window.py:102
+#: src/cinnamon_clipboard/ui/preferences_window.py:15
+msgid "Preferences"
+msgstr "Preferencias"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:91
+msgid "Quit Cinnamon Clipboard"
+msgstr "Salir de Cinnamon Clipboard"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:99
+msgid "Open application"
+msgstr "Abrir aplicación"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:397
+#: src/cinnamon_clipboard/ui/main_window.py:184
+msgid "[Image]"
+msgstr "[Imagen]"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:497
+#: src/cinnamon_clipboard/ui/main_window.py:228
+msgid "Unpin"
+msgstr "Desanclar"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:497
+#: src/cinnamon_clipboard/ui/main_window.py:228
+msgid "Pin to top"
+msgstr "Anclar al principio"
+
+#: src/cinnamon_clipboard/ui/main_window.py:20
+msgid "Clipboard Manager"
+msgstr "Gestor de portapapeles"
+
+#: src/cinnamon_clipboard/ui/main_window.py:46
+msgid "Search history..."
+msgstr "Buscar en el historial..."
+
+#: src/cinnamon_clipboard/ui/main_window.py:54
+msgid "All"
+msgstr "Todo"
+
+#: src/cinnamon_clipboard/ui/main_window.py:58
+msgid "Text"
+msgstr "Texto"
+
+#: src/cinnamon_clipboard/ui/main_window.py:62
+msgid "Images"
+msgstr "Imágenes"
+
+#: src/cinnamon_clipboard/ui/main_window.py:66
+#: src/cinnamon_clipboard/ui/main_window.py:197
+msgid "Files"
+msgstr "Archivos"
+
+#: src/cinnamon_clipboard/ui/main_window.py:92
+msgid "Delete all unpinned history items"
+msgstr "Eliminar todos los elementos no anclados"
+
+#: src/cinnamon_clipboard/ui/main_window.py:97
+msgid "About"
+msgstr "Acerca de"
+
+#: src/cinnamon_clipboard/ui/main_window.py:106
+msgid "Quit"
+msgstr "Salir"
+
+#: src/cinnamon_clipboard/ui/main_window.py:107
+msgid "Close Cinnamon Clipboard"
+msgstr "Cerrar Cinnamon Clipboard"
+
+#: src/cinnamon_clipboard/ui/main_window.py:188
+msgid "Image"
+msgstr "Imagen"
+
+#: src/cinnamon_clipboard/ui/main_window.py:234
+msgid "Copy to clipboard"
+msgstr "Copiar al portapapeles"
+
+#: src/cinnamon_clipboard/ui/main_window.py:240
+msgid "Delete"
+msgstr "Eliminar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:55
+msgid "History and Privacy"
+msgstr "Historial y privacidad"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:59
+msgid "Save history (Private Mode):"
+msgstr "Guardar historial (Modo privado):"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:68
+msgid "History limit:"
+msgstr "Límite del historial:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:104
+msgid "Content Capture"
+msgstr "Captura de contenido"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:108
+msgid "Capture images:"
+msgstr "Capturar imágenes:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:117
+msgid "Capture files and folders:"
+msgstr "Capturar archivos y carpetas:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:134
+msgid "System and Shortcut"
+msgstr "Sistema y atajo"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:138
+msgid "Start with session:"
+msgstr "Iniciar con la sesión:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:147
+msgid "Tray menu shortcut:"
+msgstr "Atajo del menú de la bandeja:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:161
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:165
+msgid "Save"
+msgstr "Guardar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:181
+msgid "Click to assign"
+msgstr "Haz clic para asignar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:186
+msgid "Press a key combination..."
+msgstr "Presione una combinación de teclas..."

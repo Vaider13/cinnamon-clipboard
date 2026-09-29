@@ -7,6 +7,7 @@ gi.require_version("GdkPixbuf", "2.0")
 
 from gi.repository import Gtk, Gdk, GdkPixbuf
 
+from ..i18n import _
 from .preferences_window import PreferencesWindow
 
 from .about_window import AboutWindow
@@ -16,7 +17,7 @@ class MainWindow(Gtk.Window):
     """Ventana principal de gestión del historial del portapapeles."""
 
     def __init__(self, clipboard_manager, on_quit_app_callback=None):
-        super().__init__(title="Gestor de Portapapeles")
+        super().__init__(title=_("Clipboard Manager"))
 
         self.clipboard_manager = clipboard_manager
         self.on_quit_app_callback = on_quit_app_callback
@@ -42,7 +43,7 @@ class MainWindow(Gtk.Window):
         top_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
         self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text("Buscar en el historial...")
+        self.search_entry.set_placeholder_text(_("Search history..."))
         self.search_entry.connect("search-changed", self._on_search_changed)
         top_box.pack_start(self.search_entry, True, True, 0)
 
@@ -50,19 +51,19 @@ class MainWindow(Gtk.Window):
         filter_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         filter_box.set_valign(Gtk.Align.CENTER)
         
-        btn_all = Gtk.RadioButton.new_with_label(None, "Todos")
+        btn_all = Gtk.RadioButton.new_with_label(None, _("All"))
         btn_all.connect("toggled", self._on_filter_changed, "ALL")
         filter_box.pack_start(btn_all, False, False, 0)
 
-        btn_text = Gtk.RadioButton.new_with_label_from_widget(btn_all, "Texto")
+        btn_text = Gtk.RadioButton.new_with_label_from_widget(btn_all, _("Text"))
         btn_text.connect("toggled", self._on_filter_changed, "text")
         filter_box.pack_start(btn_text, False, False, 0)
 
-        btn_img = Gtk.RadioButton.new_with_label_from_widget(btn_all, "Imágenes")
+        btn_img = Gtk.RadioButton.new_with_label_from_widget(btn_all, _("Images"))
         btn_img.connect("toggled", self._on_filter_changed, "image")
         filter_box.pack_start(btn_img, False, False, 0)
 
-        btn_files = Gtk.RadioButton.new_with_label_from_widget(btn_all, "Archivos")
+        btn_files = Gtk.RadioButton.new_with_label_from_widget(btn_all, _("Files"))
         btn_files.connect("toggled", self._on_filter_changed, "files")
         filter_box.pack_start(btn_files, False, False, 0)
 
@@ -87,23 +88,23 @@ class MainWindow(Gtk.Window):
 
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
-        btn_clear_all = Gtk.Button(label="Vaciar todo")
-        btn_clear_all.set_tooltip_text("Elimina todos los elementos no anclados del historial")
+        btn_clear_all = Gtk.Button(label=_("Clear all"))
+        btn_clear_all.set_tooltip_text(_("Delete all unpinned history items"))
         btn_clear_all.connect("clicked", self._on_clear_all)
         bottom_box.pack_start(btn_clear_all, False, False, 0)
 
         btn_about = Gtk.Button.new_from_icon_name("help-about-symbolic", Gtk.IconSize.BUTTON)
-        btn_about.set_tooltip_text("Acerca de")
+        btn_about.set_tooltip_text(_("About"))
         btn_about.connect("clicked", self._open_about)
         bottom_box.pack_end(btn_about, False, False, 0)
 
         btn_pref = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
-        btn_pref.set_tooltip_text("Preferencias")
+        btn_pref.set_tooltip_text(_("Preferences"))
         btn_pref.connect("clicked", self._open_preferences)
         bottom_box.pack_end(btn_pref, False, False, 0)
 
-        btn_quit = Gtk.Button(label="Salir")
-        btn_quit.set_tooltip_text("Cerrar Cinnamon Clipboard")
+        btn_quit = Gtk.Button(label=_("Quit"))
+        btn_quit.set_tooltip_text(_("Close Cinnamon Clipboard"))
         btn_quit.connect("clicked", self._on_quit_clicked)
         bottom_box.pack_end(btn_quit, False, False, 0)
 
@@ -180,11 +181,11 @@ class MainWindow(Gtk.Window):
                 img.set_valign(Gtk.Align.CENTER)
                 box.pack_start(img, False, False, 0)
             else:
-                lbl_type = Gtk.Label(label="[Imagen]")
+                lbl_type = Gtk.Label(label=_("[Image]"))
                 lbl_type.set_valign(Gtk.Align.CENTER)
                 box.pack_start(lbl_type, False, False, 0)
 
-            info_label = Gtk.Label(label=item.get("preview", "Imagen"), xalign=0)
+            info_label = Gtk.Label(label=item.get("preview", _("Image")), xalign=0)
             info_label.set_valign(Gtk.Align.CENTER)
             box.pack_start(info_label, True, True, 0)
 
@@ -193,7 +194,7 @@ class MainWindow(Gtk.Window):
             icon.set_valign(Gtk.Align.CENTER)
             box.pack_start(icon, False, False, 0)
 
-            info_label = Gtk.Label(label=item.get("preview", "Archivos"), xalign=0)
+            info_label = Gtk.Label(label=item.get("preview", _("Files")), xalign=0)
             info_label.set_valign(Gtk.Align.CENTER)
             info_label.set_ellipsize(3)  # EllipsizeMode.END
             box.pack_start(info_label, True, True, 0)
@@ -224,19 +225,19 @@ class MainWindow(Gtk.Window):
         else:
             btn_pin.set_opacity(1.0)   # Blanco brillante / pleno cuando está anclado
 
-        btn_pin.set_tooltip_text("Desanclar" if is_pinned else "Anclar al principio")
+        btn_pin.set_tooltip_text(_("Unpin") if is_pinned else _("Pin to top"))
         btn_pin.connect("clicked", lambda b, i_id=item["id"]: self._on_toggle_pin(i_id))
         btn_box.pack_start(btn_pin, False, False, 0)
 
         btn_copy = Gtk.Button.new_from_icon_name("edit-copy-symbolic", Gtk.IconSize.BUTTON)
         btn_copy.set_relief(Gtk.ReliefStyle.NONE)
-        btn_copy.set_tooltip_text("Copiar al portapapeles")
+        btn_copy.set_tooltip_text(_("Copy to clipboard"))
         btn_copy.connect("clicked", lambda b, i=item: self._on_copy_item(i))
         btn_box.pack_start(btn_copy, False, False, 0)
 
         btn_delete = Gtk.Button.new_from_icon_name("user-trash-symbolic", Gtk.IconSize.BUTTON)
         btn_delete.set_relief(Gtk.ReliefStyle.NONE)
-        btn_delete.set_tooltip_text("Eliminar")
+        btn_delete.set_tooltip_text(_("Delete"))
         btn_delete.connect("clicked", lambda b, i_id=item["id"]: self._on_delete_item(i_id))
         btn_box.pack_start(btn_delete, False, False, 0)
 

@@ -4,6 +4,8 @@ gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gtk
 
+from ..i18n import _
+
 
 class AboutWindow(Gtk.AboutDialog):
     """Muestra la información de Cinnamon Clipboard."""
@@ -16,7 +18,7 @@ class AboutWindow(Gtk.AboutDialog):
 
         self.set_program_name("Cinnamon Clipboard")
         self.set_version("1.0.0 RC1")
-        self.set_comments("Gestor de portapapeles para escritorios Linux.")
+        self.set_comments(_("Clipboard manager for Linux desktops."))
         self.set_license_type(Gtk.License.GPL_3_0)
         self.set_copyright("© 2026 Vaider13")
         self.set_website("https://github.com/Vaider13/cinnamon-clipboard")

@@ -13,6 +13,7 @@ gi.require_version("GLib", "2.0")
 
 from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 
+from ..i18n import _
 from .database import HistoryDatabase
 from .settings import SettingsManager
 
@@ -212,7 +213,7 @@ class ClipboardManager:
                         "data": str(saved_file_path),
                         "data_path": str(saved_file_path),
                         "pixbuf": scaled_pixbuf,
-                        "preview": f"Imagen ({w}x{h} px)",
+                        "preview": _("Image (%(width)d×%(height)d px)") % {"width": w, "height": h},
                         "pinned": False
                     }
                     self._add_to_history(item)
@@ -293,10 +294,13 @@ class ClipboardManager:
         count = len(file_paths)
         if count == 1:
             name = unquote(os.path.basename(file_paths[0]))
-            return f"Archivo: {name}"
+            return _("File: %(name)s") % {"name": name}
         else:
             first_name = unquote(os.path.basename(file_paths[0]))
-            return f"{first_name} y {count - 1} archivo(s) más"
+            return _("%(name)s and %(count)d more file(s)") % {
+                "name": first_name,
+                "count": count - 1,
+            }
 
     def _scale_pixbuf(self, pixbuf, target_size=140):
         """Escala proporcionalmente la imagen para la miniatura del menú."""

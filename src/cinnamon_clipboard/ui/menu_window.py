@@ -9,7 +9,9 @@ gi.require_version("GLib", "2.0")
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
+from ..i18n import _
 from .preferences_window import PreferencesWindow
+
 
 
 class QuickMenuWindow(Gtk.Window):
@@ -53,7 +55,7 @@ class QuickMenuWindow(Gtk.Window):
 
         # 1. Barra de búsqueda estática
         self.search_entry = Gtk.SearchEntry()
-        self.search_entry.set_placeholder_text("Buscar...")
+        self.search_entry.set_placeholder_text(_("Search.."))
         self.search_entry.connect("search-changed", self._on_search_changed)
         self.main_box.pack_start(self.search_entry, False, False, 0)
 
@@ -76,18 +78,18 @@ class QuickMenuWindow(Gtk.Window):
 
         self.bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         
-        self.btn_clear = Gtk.Button(label="Vaciar todo")
+        self.btn_clear = Gtk.Button(label=_("Clear all"))
         self.btn_clear.connect("clicked", self._on_clear_all)
         self.bottom_box.pack_start(self.btn_clear, False, False, 0)
 
         btn_pref = Gtk.Button.new_from_icon_name("emblem-system-symbolic", Gtk.IconSize.BUTTON)
-        btn_pref.set_tooltip_text("Preferencias")
+        btn_pref.set_tooltip_text(_("Preferences"))
         btn_pref.connect("clicked", self._open_preferences)
         self.bottom_box.pack_start(btn_pref, False, False, 0)
 
         # Botón para salir/cerrar la app completamente
         btn_exit = Gtk.Button.new_from_icon_name("application-exit-symbolic", Gtk.IconSize.BUTTON)
-        btn_exit.set_tooltip_text("Salir de Cinnamon Clipboard")
+        btn_exit.set_tooltip_text(_("Close Cinnamon Clipboard"))
         btn_exit.connect("clicked", self._on_quit_app)
         self.bottom_box.pack_start(btn_exit, False, False, 0)
 
@@ -95,7 +97,7 @@ class QuickMenuWindow(Gtk.Window):
         self.bottom_box.pack_start(spacer, True, True, 0)
 
         if self.on_open_main_window_callback:
-            btn_app = Gtk.Button(label="Abrir aplicación")
+            btn_app = Gtk.Button(label=_("Open application"))
             btn_app.connect("clicked", self._on_open_app)
             self.bottom_box.pack_end(btn_app, False, False, 0)
 
@@ -492,7 +494,7 @@ class QuickMenuWindow(Gtk.Window):
         else:
             btn_pin.set_opacity(1.0)
 
-        btn_pin.set_tooltip_text("Desanclar" if is_pinned else "Anclar al principio")
+        btn_pin.set_tooltip_text(_("Unpin") if is_pinned else _("Pin to top"))
         btn_pin.connect("clicked", lambda b, i_id=item["id"]: self._on_toggle_pin(i_id))
 
         grid.attach(btn_pin, 2, 0, 1, 1)

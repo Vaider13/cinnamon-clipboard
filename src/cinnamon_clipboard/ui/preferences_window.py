@@ -5,12 +5,14 @@ gi.require_version("Gdk", "3.0")
 
 from gi.repository import Gtk, Gdk
 
+from ..i18n import _
+
 
 class PreferencesWindow(Gtk.Window):
     """Ventana de configuración/preferencias de Cinnamon Clipboard."""
 
     def __init__(self, settings_manager, clipboard_manager, on_shortcut_changed_callback=None):
-        super().__init__(title="Preferencias")
+        super().__init__(title=_("Preferences"))
         self.settings = settings_manager
         self.clipboard_manager = clipboard_manager
         self.on_shortcut_changed_callback = on_shortcut_changed_callback
@@ -50,11 +52,11 @@ class PreferencesWindow(Gtk.Window):
 
         # --- SECCIÓN 1: HISTORIAL Y PRIVACIDAD ---
         lbl_sec1 = Gtk.Label(xalign=0)
-        lbl_sec1.set_markup("<b>Historial y Privacidad</b>")
+        lbl_sec1.set_markup(_("History and Privacy"))
         grid.attach(lbl_sec1, 0, row, 2, 1)
         row += 1
 
-        lbl_enable = Gtk.Label(label="Guardar historial (Modo Privado):", xalign=0)
+        lbl_enable = Gtk.Label(label=_("Save history (Private Mode):"), xalign=0)
         self.switch_enable = Gtk.Switch()
         self.switch_enable.set_halign(Gtk.Align.END)
         self.switch_enable.set_active(self.temp_settings["enable_history"])
@@ -63,7 +65,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.switch_enable, 1, row, 1, 1)
         row += 1
 
-        lbl_limit = Gtk.Label(label="Límite del historial:", xalign=0)
+        lbl_limit = Gtk.Label(label=_("History limit:"), xalign=0)
         box_radio = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         box_radio.set_halign(Gtk.Align.END)
 
@@ -99,11 +101,11 @@ class PreferencesWindow(Gtk.Window):
 
         # --- SECCIÓN 2: CAPTURA DE CONTENIDO ---
         lbl_sec2 = Gtk.Label(xalign=0)
-        lbl_sec2.set_markup("<b>Captura de Contenido</b>")
+        lbl_sec2.set_markup(_("Content Capture"))
         grid.attach(lbl_sec2, 0, row, 2, 1)
         row += 1
 
-        lbl_img = Gtk.Label(label="Capturar imágenes:", xalign=0)
+        lbl_img = Gtk.Label(label=_("Capture images:"), xalign=0)
         self.switch_images = Gtk.Switch()
         self.switch_images.set_halign(Gtk.Align.END)
         self.switch_images.set_active(self.temp_settings["save_images"])
@@ -112,7 +114,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.switch_images, 1, row, 1, 1)
         row += 1
 
-        lbl_files = Gtk.Label(label="Capturar archivos y carpetas:", xalign=0)
+        lbl_files = Gtk.Label(label=_("Capture files and folders:"), xalign=0)
         self.switch_files = Gtk.Switch()
         self.switch_files.set_halign(Gtk.Align.END)
         self.switch_files.set_active(self.temp_settings["save_files"])
@@ -129,11 +131,11 @@ class PreferencesWindow(Gtk.Window):
 
         # --- SECCIÓN 3: SISTEMA Y ATAJO ---
         lbl_sec3 = Gtk.Label(xalign=0)
-        lbl_sec3.set_markup("<b>Sistema y Atajo</b>")
+        lbl_sec3.set_markup(_("System and Shortcut"))
         grid.attach(lbl_sec3, 0, row, 2, 1)
         row += 1
 
-        lbl_auto = Gtk.Label(label="Iniciar con la sesión:", xalign=0)
+        lbl_auto = Gtk.Label(label=_("Start with session:"), xalign=0)
         self.switch_autostart = Gtk.Switch()
         self.switch_autostart.set_halign(Gtk.Align.END)
         self.switch_autostart.set_active(self.temp_settings["autostart"])
@@ -142,7 +144,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.switch_autostart, 1, row, 1, 1)
         row += 1
 
-        lbl_shortcut = Gtk.Label(label="Atajo del menú de la bandeja:", xalign=0)
+        lbl_shortcut = Gtk.Label(label=_("Tray menu shortcut:"), xalign=0)
         self.btn_shortcut = Gtk.Button(label=self._format_shortcut_label(self.temp_settings["shortcut"]))
         self.btn_shortcut.set_halign(Gtk.Align.END)
         self.btn_shortcut.connect("clicked", self._start_capturing_shortcut)
@@ -156,11 +158,11 @@ class PreferencesWindow(Gtk.Window):
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         bottom_box.set_halign(Gtk.Align.END)
 
-        btn_cancel = Gtk.Button(label="Cancelar")
+        btn_cancel = Gtk.Button(label=_("Cancel"))
         btn_cancel.connect("clicked", lambda b: self.destroy())
         bottom_box.pack_start(btn_cancel, False, False, 0)
 
-        btn_save = Gtk.Button(label="Guardar")
+        btn_save = Gtk.Button(label=_("Save"))
         btn_save.get_style_context().add_class("suggested-action")
         btn_save.connect("clicked", self._on_save_clicked)
         bottom_box.pack_start(btn_save, False, False, 0)
@@ -176,12 +178,12 @@ class PreferencesWindow(Gtk.Window):
 
     def _format_shortcut_label(self, shortcut_str):
         if not shortcut_str:
-            return "Haz clic para asignar"
+            return _("Click to assign")
         return shortcut_str.replace("<Super>", "Super + ").replace("<Ctrl>", "Ctrl + ").replace("<Alt>", "Alt + ").replace("<Shift>", "Shift + ")
 
     def _start_capturing_shortcut(self, btn):
         self.is_capturing_shortcut = True
-        self.btn_shortcut.set_label("Presione una combinación...")
+        self.btn_shortcut.set_label(_("Press a key combination..."))
 
     def _on_key_press_event(self, widget, event):
         if not self.is_capturing_shortcut:

@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+from ..i18n import _
 
 
 class SettingsManager:
@@ -85,7 +86,7 @@ class SettingsManager:
             content = f"""[Desktop Entry]
 Type=Application
 Name=Cinnamon Clipboard
-Comment=Gestor de portapapeles para Cinnamon
+Comment={_("Clipboard manager for Cinnamon")}
 Exec=python3 -m src.cinnamon_clipboard
 Icon=edit-paste-symbolic
 Terminal=false

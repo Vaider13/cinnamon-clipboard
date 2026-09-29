@@ -10,6 +10,8 @@ except Exception:
 
 from gi.repository import GLib, Gtk
 
+from .i18n import _
+
 from .core.clipboard import ClipboardManager
 from .ui.main_window import MainWindow
 from .ui.menu_window import QuickMenuWindow
@@ -119,11 +121,11 @@ class ClipboardApp(Gtk.Application):
                 flags=0,
                 message_type=Gtk.MessageType.WARNING,
                 buttons=Gtk.ButtonsType.OK,
-                text="Configuración restablecida",
+                text=_("Configuration restored"),
             )
             dialog.format_secondary_text(
-                "El archivo de configuración contenía datos inválidos "
-                "y fue restablecido a los valores predeterminados."
+                _("The configuration file contained invalid data and was reset to the default "
+                  "values.")
             )
             dialog.run()
             dialog.destroy()
