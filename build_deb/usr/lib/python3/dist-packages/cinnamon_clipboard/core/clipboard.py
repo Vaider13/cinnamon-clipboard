@@ -115,11 +115,13 @@ class ClipboardManager:
             return False
 
     def _on_clipboard_changed(self, clipboard, event):
-        """Aplica un debounce de 150 ms antes de procesar el contenido."""
+        """Aplica un debounce dinámico antes de procesar el contenido."""
         if self._debounce_timer_id is not None:
             GLib.source_remove(self._debounce_timer_id)
 
-        self._debounce_timer_id = GLib.timeout_add(150, self._process_clipboard_content)
+        # Si el portapapeles trae una imagen, le damos 250 ms para que Cinnamon asiente el evento de captura
+        debounce_ms = 250 if clipboard.wait_is_image_available() else 150
+        self._debounce_timer_id = GLib.timeout_add(debounce_ms, self._process_clipboard_content)
 
     def _process_clipboard_content(self):
         self._debounce_timer_id = None

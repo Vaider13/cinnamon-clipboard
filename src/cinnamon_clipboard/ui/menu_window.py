@@ -543,8 +543,12 @@ class QuickMenuWindow(Gtk.Window):
         if not item:
             return
 
+        # 1. Liberar la captura de X11 y ocultar de forma síncrona e inmediata
+        self._release_grab()
+        self.hide()  # Oculta la ventana en el acto, sin dar margen a interrupciones del hilo
+
+        # 2. Delegar la copia al backend
         self.clipboard_manager.copy_item_to_system(item)
-        self.hide_animated()
 
     def _on_toggle_pin(self, item_id):
         self.clipboard_manager.toggle_pin_item(item_id)
