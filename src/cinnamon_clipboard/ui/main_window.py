@@ -258,20 +258,7 @@ class MainWindow(Gtk.Window):
         self.clipboard_manager.toggle_pin_item(item_id)
 
     def _on_copy_item(self, item):
-        item_type = item.get("type")
-        if item_type == "text":
-            self.clipboard_manager.is_self_copying = True
-            self.clipboard_manager.clipboard.set_text(item["data"], -1)
-        elif item_type == "image":
-            if "data_path" in item and os.path.exists(item["data_path"]):
-                self.clipboard_manager.is_self_copying = True
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
-                self.clipboard_manager.clipboard.set_image(pixbuf)
-        elif item_type == "files":
-            self.clipboard_manager.set_files(item["data"])
-
-        # Promover elemento arriba de su respectivo grupo
-        self.clipboard_manager.promote_item(item["id"])
+        self.clipboard_manager.copy_item_to_system(item)
 
     def _on_delete_item(self, item_id):
         self.clipboard_manager.remove_item(item_id)

@@ -434,6 +434,33 @@ class ClipboardManager:
         self.history.sort(key=lambda x: (not x.get("pinned", False), -x["id"]))
         self._notify_history_changed()
 
+    def copy_item_to_system(self, item):
+        """Método unificado para publicar cualquier tipo de elemento en el portapapeles del sistema."""
+        if not item:
+            return
+
+        item_type = item.get("type")
+
+        if item_type == "text":
+            self.is_self_copying = True
+            self.clipboard.set_text(item["data"], -1)
+            print("[COPIADO] Texto puesto en portapapeles.")
+
+        elif item_type == "image":
+            if "data_path" in item and os.path.exists(item["data_path"]):
+                self.is_self_copying = True
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
+                self.clipboard.set_image(pixbuf)
+                print("[COPIADO] Imagen de caché puesta en portapapeles.")
+
+        elif item_type == "files":
+            self.set_files(item["data"])
+            print(f"[COPIADO] Lista de {len(item['data'])} archivo(s) puesta en portapapeles.")
+
+        # Promover elemento a la cima de su grupo
+        if "id" in item:
+            self.promote_item(item["id"])
+
     def remove_item(self, item_id):
         """Elimina un elemento del historial en RAM y en SQLite."""
         removed_items = [i for i in self.history if i["id"] == item_id]

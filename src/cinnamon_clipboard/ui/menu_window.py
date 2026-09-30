@@ -448,17 +448,25 @@ class QuickMenuWindow(Gtk.Window):
             if needs_expand:
                 preview_text = preview_text.rstrip() + "..."
 
+            # Ícono indicativo de texto
+            icon_text = Gtk.Image.new_from_icon_name("edit-paste-symbolic", Gtk.IconSize.BUTTON)
+            icon_text.set_valign(Gtk.Align.CENTER)
+
             label = Gtk.Label(label=preview_text, xalign=0)
             label.set_line_wrap(True)
             label.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
 
-            label.set_size_request(210, -1)
+            label.set_size_request(190, -1)
             label.set_hexpand(True)
             label.set_halign(Gtk.Align.START)
             label.set_valign(Gtk.Align.CENTER)
             label.set_selectable(False)
 
-            grid.attach(label, 0, 0, 1, 1)
+            box_text = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+            box_text.pack_start(icon_text, False, False, 0)
+            box_text.pack_start(label, True, True, 0)
+
+            grid.attach(box_text, 0, 0, 1, 1)
 
             if needs_expand:
                 btn_expand = Gtk.Button.new_from_icon_name("pan-down-symbolic", Gtk.IconSize.BUTTON)
@@ -530,24 +538,7 @@ class QuickMenuWindow(Gtk.Window):
         if not item:
             return
 
-        if item["type"] == "text":
-            self.clipboard_manager.is_self_copying = True
-            self.clipboard_manager.clipboard.set_text(item["data"], -1)
-            print(f"[COPIADO] Texto puesto en portapapeles.")
-
-        elif item["type"] == "image":
-            if "data_path" in item and os.path.exists(item["data_path"]):
-                self.clipboard_manager.is_self_copying = True
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
-                self.clipboard_manager.clipboard.set_image(pixbuf)
-                print(f"[COPIADO] Imagen de caché puesta en portapapeles.")
-
-        elif item["type"] == "files":
-            self.clipboard_manager.set_files(item["data"])
-            print(f"[COPIADO] Lista de {len(item['data'])} archivo(s) puesta en portapapeles.")
-
-        # Promover elemento arriba de su respectivo grupo
-        self.clipboard_manager.promote_item(item["id"])
+        self.clipboard_manager.copy_item_to_system(item)
         self.hide_animated()
 
     def _on_toggle_pin(self, item_id):
