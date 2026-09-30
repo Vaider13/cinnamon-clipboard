@@ -109,10 +109,15 @@ class QuickMenuWindow(Gtk.Window):
         # Suscribir a eventos del historial para actualizar en tiempo real
         self.clipboard_manager.add_history_listener(self._on_history_updated_external)
 
-        # Eventos de teclado y clics
+        # Eventos de teclado, clics y ciclo de vida
         self.connect("key-press-event", self._on_key_press)
         self.connect("button-press-event", self._on_button_press)
         self.connect("focus-out-event", self._on_focus_out)
+        self.connect("destroy", self._on_destroy)
+
+    def _on_destroy(self, widget):
+        """Desregistra la suscripción al historial al destruir la ventana para evitar fugas de memoria."""
+        self.clipboard_manager.remove_history_listener(self._on_history_updated_external)
 
     def _open_preferences(self, btn):
         self.hide_animated()
