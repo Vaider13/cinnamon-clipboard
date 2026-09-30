@@ -1,0 +1,10 @@
+Package: cinnamon-clipboard
+Version: 1.0.0~rc1
+Architecture: all
+Maintainer: Pablo / Vaider13 <vaider13@github.com>
+Depends: python3, python3-gi, gir1.2-gtk-3.0, gir1.2-xapp-1.0, gir1.2-keybinder-3.0, xclip, python3-setproctitle
+Section: utils
+Priority: optional
+Description: Clipboard manager for Cinnamon and Linux desktops
+ Simple, lightweight, and responsive clipboard manager with GTK3, SQLite persistence,
+ shortcut support, and privacy filter for password managers.

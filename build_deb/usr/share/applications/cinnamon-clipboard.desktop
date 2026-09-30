@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Cinnamon Clipboard
+Comment=Clipboard manager for Cinnamon
+Exec=cinnamon-clipboard
+Icon=cinnamon-clipboard
+Terminal=false
+Categories=Utility;GTK;
