@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 class HistoryDatabase:
-    """Maneja la persistencia del historial en SQLite con soporte para elementos anclados."""
+    """Handles history persistence in SQLite with support for pinned items."""
 
     def __init__(self, db_path=None):
         if db_path is None:
@@ -21,7 +21,7 @@ class HistoryDatabase:
         return sqlite3.connect(self.db_path)
 
     def _init_db(self):
-        """Crea la tabla de historial y aplica migraciones si faltan columnas."""
+        """Create the history table and apply migrations if required columns are missing."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("""
@@ -36,7 +36,7 @@ class HistoryDatabase:
                 )
             """)
             
-            # Migración por si la tabla fue creada sin la columna 'pinned'
+            # Migration in case the table was created without the 'pinned' column
             cursor.execute("PRAGMA table_info(history)")
             columns = [col[1] for col in cursor.fetchall()]
             if "pinned" not in columns:
@@ -45,7 +45,7 @@ class HistoryDatabase:
             conn.commit()
 
     def load_history(self, limit=50):
-        """Carga todos los elementos anclados y hasta 'limit' elementos no anclados."""
+        """Load all pinned items and up to 'limit' unpinned items."""
         items = []
         with self._get_connection() as conn:
             cursor = conn.cursor()
@@ -96,7 +96,7 @@ class HistoryDatabase:
         return items
 
     def add_item(self, item_type, data, preview, data_path=None):
-        """Inserta un nuevo elemento no anclado por defecto."""
+        """Insert a new item as unpinned by default."""
         if item_type == "files" and isinstance(data, list):
             stored_data = json.dumps(data)
         else:
@@ -112,21 +112,21 @@ class HistoryDatabase:
             return cursor.lastrowid
 
     def toggle_pin(self, item_id, is_pinned):
-        """Marca o desmarca un ítem como anclado."""
+        """Mark or unmark an item as pinned."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("UPDATE history SET pinned = ? WHERE id = ?", (1 if is_pinned else 0, item_id))
             conn.commit()
 
     def delete_item(self, item_id):
-        """Elimina un registro por su ID."""
+        """Delete a record by its ID."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM history WHERE id = ?", (item_id,))
             conn.commit()
 
     def clear_all(self, keep_pinned=True):
-        """Vacía el historial pero conserva los elementos anclados si keep_pinned=True."""
+        """Clear the history but keep pinned items if keep_pinned=True."""
         with self._get_connection() as conn:
             cursor = conn.cursor()
             if keep_pinned:

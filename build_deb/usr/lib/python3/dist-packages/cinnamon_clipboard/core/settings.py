@@ -1,11 +1,14 @@
 import json
 import os
+import logging
 from pathlib import Path
 from ..i18n import _
 
+logger = logging.getLogger(__name__)
+
 
 class SettingsManager:
-    """Maneja la persistencia de las configuraciones de la aplicación en formato JSON."""
+    """Handles persistence of application settings in JSON format."""
 
     DEFAULTS = {
         "max_history": 50,
@@ -25,7 +28,7 @@ class SettingsManager:
         self.load()
 
     def load(self):
-        """Carga y valida la configuración, restaurando los valores predeterminados si es inválida."""
+        """Load and validate the configuration, restoring default values if it is invalid."""
         if not self.config_path.exists():
             return
 
@@ -34,7 +37,7 @@ class SettingsManager:
                 data = json.load(f)
 
             if not isinstance(data, dict):
-                raise ValueError("La configuración no contiene un objeto JSON válido.")
+                raise ValueError("The configuration does not contain a valid JSON object.")
 
             valid = True
 
@@ -49,25 +52,23 @@ class SettingsManager:
                 valid = False
 
             if not valid:
-                raise ValueError("Uno o más valores de configuración son inválidos.")
+                raise ValueError("One or more configuration values are invalid.")
 
             self.settings.update(data)
 
         except Exception as e:
-            print(f"[ERROR] Configuración inválida: {e}")
-            print("[INFO] Restaurando configuración predeterminada.")
 
             self.settings = self.DEFAULTS.copy()
             self.config_was_reset = True
             self.save()
 
     def save(self):
-        """Guarda las configuraciones actuales en el archivo JSON."""
+        """Save the current settings to the JSON file."""
         try:
             with open(self.config_path, "w", encoding="utf-8") as f:
                 json.dump(self.settings, f, indent=2)
         except Exception as e:
-            print(f"[ERROR] No se pudo guardar config.json: {e}")
+            logger.error("Failed to save config.json: %s", e)
 
     def get(self, key):
         return self.settings.get(key, self.DEFAULTS.get(key))
@@ -77,7 +78,7 @@ class SettingsManager:
         self.save()
 
     def set_autostart(self, enable):
-        """Crea o elimina el archivo .desktop en ~/.config/autostart para el inicio automático con la sesión."""
+        """Create or remove the .desktop file in ~/.config/autostart for automatic startup with the session."""
         autostart_dir = Path.home() / ".config" / "autostart"
         autostart_file = autostart_dir / "cinnamon-clipboard.desktop"
 
@@ -97,12 +98,12 @@ X-GNOME-Autostart-enabled=true
                 with open(autostart_file, "w", encoding="utf-8") as f:
                     f.write(content)
             except Exception as e:
-                print(f"[ERROR] No se pudo crear autostart .desktop: {e}")
+                logger.error("Failed to create autostart .desktop file: %s", e)
         else:
             if autostart_file.exists():
                 try:
                     autostart_file.unlink()
                 except Exception as e:
-                    print(f"[ERROR] No se pudo eliminar autostart .desktop: {e}")
+                    logger.error("Failed to delete autostart .desktop file: %s", e)
 
         self.set("autostart", enable)

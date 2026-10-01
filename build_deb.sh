@@ -83,9 +83,12 @@ cat <<EOF > "$BUILD_DIR/usr/share/applications/cinnamon-clipboard.desktop"
 [Desktop Entry]
 Type=Application
 Name=Cinnamon Clipboard
+Name[es]=Portapapeles de Cinnamon
 Comment=Clipboard manager for Cinnamon
+Comment[es]=Gestor de portapapeles para Cinnamon
 Exec=cinnamon-clipboard
 Icon=cinnamon-clipboard
+StartupWMClass=CinnamonClipboard
 Terminal=false
 Categories=Utility;GTK;
 EOF

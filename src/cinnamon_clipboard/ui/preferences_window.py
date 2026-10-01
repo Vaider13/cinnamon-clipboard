@@ -9,10 +9,13 @@ from ..i18n import _
 
 
 class PreferencesWindow(Gtk.Window):
-    """Ventana de configuración/preferencias de Cinnamon Clipboard."""
+    """Cinnamon Clipboard configuration/preferences window."""
 
     def __init__(self, settings_manager, clipboard_manager, on_shortcut_changed_callback=None):
         super().__init__(title=_("Preferences"))
+
+        self.set_wmclass("cinnamon-clipboard", "CinnamonClipboard")
+        
         self.settings = settings_manager
         self.clipboard_manager = clipboard_manager
         self.on_shortcut_changed_callback = on_shortcut_changed_callback
@@ -21,7 +24,7 @@ class PreferencesWindow(Gtk.Window):
         self.set_resizable(False)
         self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
-        # Cargar valores temporales (para aplicar solo si da clic en "Guardar")
+        # Load temporary values (to apply only if the user clicks "Save")
         self.temp_settings = {
             "enable_history": self.settings.get("enable_history"),
             "max_history": self.settings.get("max_history"),
@@ -33,7 +36,7 @@ class PreferencesWindow(Gtk.Window):
 
         self.is_capturing_shortcut = False
 
-        # Contenedor principal
+        # Main container
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         main_box.set_margin_top(16)
         main_box.set_margin_bottom(16)
@@ -41,7 +44,7 @@ class PreferencesWindow(Gtk.Window):
         main_box.set_margin_end(20)
         self.add(main_box)
 
-        # Grid principal para alineación uniforme de filas
+        # Main grid for uniform row alignment
         grid = Gtk.Grid()
         grid.set_column_spacing(24)
         grid.set_row_spacing(14)
@@ -50,7 +53,7 @@ class PreferencesWindow(Gtk.Window):
 
         row = 0
 
-        # --- SECCIÓN 1: HISTORIAL Y PRIVACIDAD ---
+        # --- SECTION 1: HISTORY AND PRIVACY ---
         lbl_sec1 = Gtk.Label(xalign=0)
         lbl_sec1.set_markup(_("History and Privacy"))
         grid.attach(lbl_sec1, 0, row, 2, 1)
@@ -99,7 +102,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(sep1, 0, row, 2, 1)
         row += 1
 
-        # --- SECCIÓN 2: CAPTURA DE CONTENIDO ---
+        # --- SECTION 2: CONTENT CAPTURE ---
         lbl_sec2 = Gtk.Label(xalign=0)
         lbl_sec2.set_markup(_("Content Capture"))
         grid.attach(lbl_sec2, 0, row, 2, 1)
@@ -129,7 +132,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(sep2, 0, row, 2, 1)
         row += 1
 
-        # --- SECCIÓN 3: SISTEMA Y ATAJO ---
+        # --- SECTION 3: SYSTEM AND SHORTCUT ---
         lbl_sec3 = Gtk.Label(xalign=0)
         lbl_sec3.set_markup(_("System and Shortcut"))
         grid.attach(lbl_sec3, 0, row, 2, 1)
@@ -152,7 +155,7 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.btn_shortcut, 1, row, 1, 1)
         row += 1
 
-        # BARRA INFERIOR DE ACCIONES (CANCELAR / GUARDAR)
+        # LOWER ACTION BAR (CANCEL / SAVE)
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -192,14 +195,14 @@ class PreferencesWindow(Gtk.Window):
         keyval = event.keyval
         state = event.state
 
-        # Ignorar presiones de modificadores aislados
+        # Ignore isolated modifier key presses
         if keyval in (Gdk.KEY_Control_L, Gdk.KEY_Control_R,
                       Gdk.KEY_Shift_L, Gdk.KEY_Shift_R,
                       Gdk.KEY_Alt_L, Gdk.KEY_Alt_R,
                       Gdk.KEY_Super_L, Gdk.KEY_Super_R):
             return True
 
-        # Esc para cancelar captura
+        # Esc to cancel capture
         if keyval == Gdk.KEY_Escape:
             self.is_capturing_shortcut = False
             self.btn_shortcut.set_label(self._format_shortcut_label(self.temp_settings["shortcut"]))
@@ -226,17 +229,17 @@ class PreferencesWindow(Gtk.Window):
         return True
 
     def _on_save_clicked(self, btn):
-        # Guardar permanentemente en SettingsManager
+        # Save permanently in SettingsManager
         for k, v in self.temp_settings.items():
             if k == "autostart":
                 self.settings.set_autostart(v)
             else:
                 self.settings.set(k, v)
 
-        # Actualizar valores en ClipboardManager
+        # Update values in ClipboardManager
         self.clipboard_manager.apply_max_history(self.temp_settings["max_history"])
 
-        # Notificar atajo global a App
+        # Notify the app about the global shortcut
         if self.on_shortcut_changed_callback:
             self.on_shortcut_changed_callback(self.temp_settings["shortcut"])
 

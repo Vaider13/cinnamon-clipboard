@@ -15,7 +15,7 @@ from .preferences_window import PreferencesWindow
 
 
 class QuickMenuWindow(Gtk.Window):
-    """Ventana desplegable estilo menú nativo para la bandeja de Cinnamon."""
+    """Native menu-style dropdown window for the Cinnamon tray."""
 
     def __init__(self, clipboard_manager, on_open_main_window_callback=None, on_quit_app_callback=None):
         super().__init__(type=Gtk.WindowType.TOPLEVEL)
@@ -23,14 +23,12 @@ class QuickMenuWindow(Gtk.Window):
         self.clipboard_manager = clipboard_manager
         self.on_open_main_window_callback = on_open_main_window_callback
         self.on_quit_app_callback = on_quit_app_callback
-        print(f"[DEBUG] CALLBACK RECIBIDO EN __init__ = {on_quit_app_callback}")
-        print(f"[DEBUG] QuickMenuWindow creado. callback = {on_quit_app_callback}")
         self.pref_window = None
         self.panel_x = None
         self.panel_y = None
         self.panel_position = None
 
-        # Configuración para Muffin (Cinnamon)
+        # Configuration for Muffin (Cinnamon)
         self.set_decorated(False)
         self.set_resizable(False)
         self.set_skip_taskbar_hint(True)
@@ -40,12 +38,12 @@ class QuickMenuWindow(Gtk.Window):
 
         self.set_default_size(340, -1)
 
-        # Marco exterior con sombra nativa
+        # Outer frame with native shadow
         frame = Gtk.Frame()
         frame.set_shadow_type(Gtk.ShadowType.OUT)
         self.add(frame)
 
-        # Contenedor principal
+        # Main container
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         self.main_box.set_margin_top(8)
         self.main_box.set_margin_bottom(8)
@@ -53,13 +51,13 @@ class QuickMenuWindow(Gtk.Window):
         self.main_box.set_margin_end(8)
         frame.add(self.main_box)
 
-        # 1. Barra de búsqueda estática
+        # 1. Static search bar
         self.search_entry = Gtk.SearchEntry()
         self.search_entry.set_placeholder_text(_("Search.."))
         self.search_entry.connect("search-changed", self._on_search_changed)
         self.main_box.pack_start(self.search_entry, False, False, 0)
 
-        # 2. Área de lista scrolleable
+        # 2. Scrollable list area
         self.scrolled = Gtk.ScrolledWindow()
         self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.scrolled.set_propagate_natural_height(True)
@@ -72,7 +70,7 @@ class QuickMenuWindow(Gtk.Window):
 
         self.main_box.pack_start(self.scrolled, True, True, 0)
 
-        # 3. Separador e interior
+        # 3. Divider and inner section
         self.separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
         self.main_box.pack_start(self.separator, False, False, 0)
 
@@ -87,7 +85,7 @@ class QuickMenuWindow(Gtk.Window):
         btn_pref.connect("clicked", self._open_preferences)
         self.bottom_box.pack_start(btn_pref, False, False, 0)
 
-        # Botón para salir/cerrar la app completamente
+        # Button to exit/close the app completely
         btn_exit = Gtk.Button.new_from_icon_name("application-exit-symbolic", Gtk.IconSize.BUTTON)
         btn_exit.set_tooltip_text(_("Close Cinnamon Clipboard"))
         btn_exit.connect("clicked", self._on_quit_app)
@@ -106,35 +104,38 @@ class QuickMenuWindow(Gtk.Window):
         self._fade_timer_id = None
         self._seat_grabbed = False
 
-        # Suscribir a eventos del historial para actualizar en tiempo real
+        # Subscribe to history events to update in real time
         self.clipboard_manager.add_history_listener(self._on_history_updated_external)
 
-        # Eventos de teclado, clics y ciclo de vida
+        # Keyboard, click, and lifecycle events
         self.connect("key-press-event", self._on_key_press)
         self.connect("button-press-event", self._on_button_press)
         self.connect("focus-out-event", self._on_focus_out)
         self.connect("destroy", self._on_destroy)
 
     def _on_destroy(self, widget):
-        """Desregistra la suscripción al historial al destruir la ventana para evitar fugas de memoria."""
+        """Unsubscribe from the history listener when the window is destroyed to avoid memory leaks."""
         self.clipboard_manager.remove_history_listener(self._on_history_updated_external)
 
     def _open_preferences(self, btn):
         self.hide_animated()
+
         if self.pref_window is None or not self.pref_window.get_visible():
             app = self.get_application()
             shortcut_cb = app.update_global_shortcut if app else None
+
             self.pref_window = PreferencesWindow(
                 self.clipboard_manager.settings,
                 self.clipboard_manager,
                 on_shortcut_changed_callback=shortcut_cb
             )
+
             self.pref_window.show_all()
         else:
             self.pref_window.present()
 
     def _filter_list_func(self, row):
-        """Filtra dinámicamente las filas sin reconstruir los widgets."""
+        """Filter rows dynamically without rebuilding widgets."""
         query = self.search_entry.get_text().strip().lower()
         if not query:
             return True
@@ -148,23 +149,23 @@ class QuickMenuWindow(Gtk.Window):
         return query in preview or query in data_str
 
     def _on_search_changed(self, entry):
-        """Aplica el filtro nativo sin tocar la memoria de GTK."""
+        """Apply the native filter without touching GTK memory."""
         self.list_box.invalidate_filter()
 
     def _on_history_updated_external(self):
-        """Si la ventana está visible, la refresca ante cambios externos."""
+        """Refresh the window when it is visible and external changes occur."""
         if self.get_visible():
             self.refresh_and_show()
 
     def toggle_window(self):
-        """Abre o cierra la ventana desplegable."""
+        """Open or close the dropdown window."""
         if self.get_visible() and self.get_opacity() > 0.1:
             self.hide_animated()
         else:
             self.refresh_and_show()
 
     def _release_grab(self):
-        """Libera la captura del dispositivo de entrada X11/GDK de forma segura."""
+        """Safely release the X11/GDK input device grab."""
         if not self._seat_grabbed:
             return
 
@@ -177,7 +178,7 @@ class QuickMenuWindow(Gtk.Window):
         self._seat_grabbed = False
 
     def hide_animated(self):
-        """Oculta la ventana mediante desvanecimiento suave."""
+        """Hide the window with a smooth fade-out."""
         self._release_grab()
 
         if self._fade_timer_id:
@@ -187,7 +188,7 @@ class QuickMenuWindow(Gtk.Window):
             current_opacity = self.get_opacity()
             if current_opacity <= 0.1:
                 self.hide()
-                self.set_opacity(1.0)  # Dejar opacidad limpia
+                self.set_opacity(1.0)  # Leave opacity clean
                 self._fade_timer_id = None
                 return False
             self.set_opacity(current_opacity - 0.2)
@@ -196,13 +197,13 @@ class QuickMenuWindow(Gtk.Window):
         self._fade_timer_id = GLib.timeout_add(15, _fade_step)
 
     def _on_focus_out(self, widget, event):
-        """Si pierde el foco, verifica si el clic fue afuera para cerrar."""
+        """If focus is lost, check whether the click was outside to close."""
         if self.get_visible():
             self.hide_animated()
         return False
 
     def _on_button_press(self, widget, event):
-        """Si el evento de clic ocurrió fuera del rectángulo del menú, se cierra."""
+        """If the click occurred outside the menu rectangle, close it."""
         alloc = self.get_allocation()
         if event.x < 0 or event.x >= alloc.width or event.y < 0 or event.y >= alloc.height:
             self.hide_animated()
@@ -210,19 +211,19 @@ class QuickMenuWindow(Gtk.Window):
         return False
 
     def _update_position(self):
-        """Calcula la posición del menú según la orientación y posición del panel."""
+        """Calculate the menu position according to the panel orientation and position."""
         self.check_resize()
 
         screen = Gdk.Screen.get_default()
         monitor_geom = screen.get_monitor_geometry(0)
 
-        # Límite máximo de altura del menú.
+        # Maximum menu height limit.
         _, req_height = self.get_preferred_height()
 
         win_w = 340
 
-        # Calculamos cuánto espacio vertical tenemos realmente
-        # según la posición del panel.
+        # Calculate how much vertical space we actually have
+        # based on the panel position.
         if self.panel_position == Gtk.PositionType.BOTTOM and self.panel_y is not None:
             max_allowed_height = self.panel_y - monitor_geom.y
 
@@ -230,24 +231,17 @@ class QuickMenuWindow(Gtk.Window):
             max_allowed_height = (monitor_geom.y + monitor_geom.height) - self.panel_y
 
         else:
-            # Fallback para cuando todavía no conocemos la posición del panel.
+            # Fallback when the panel position is still unknown.
             max_allowed_height = min(500, int(monitor_geom.height * 0.45))
 
-        # Dejamos un pequeño margen de seguridad.
+        # Leave a small safety margin.
         max_allowed_height = max(90, max_allowed_height - 5)
 
         win_h = min(max(req_height, 90), max_allowed_height)
 
-        print(
-            f"[DEBUG] ESPACIO MONITOR: "
-            f"alto={monitor_geom.height}, "
-            f"máximo_actual={max_allowed_height}, "
-            f"preferido={req_height}, "
-            f"final={win_h}"
-        )
 
-        # Si todavía no tenemos información de XApp,
-        # usamos la posición anterior como fallback.
+        # If we still do not have XApp information,
+        # use the previous position as a fallback.
         if self.panel_x is None or self.panel_y is None:
             pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
             pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
@@ -255,47 +249,40 @@ class QuickMenuWindow(Gtk.Window):
 
             return
 
-        # XApp usa Gtk.PositionType para indicar dónde está el panel.
+        # XApp uses Gtk.PositionType to indicate where the panel is.
         if self.panel_position == Gtk.PositionType.BOTTOM:
-            # Panel abajo → menú encima del panel.
+            # Panel at bottom → menu above the panel.
             pos_x = self.panel_x - (win_w // 2)
             pos_y = self.panel_y - win_h
 
         elif self.panel_position == Gtk.PositionType.TOP:
-            # Panel arriba → menú debajo del panel.
+            # Panel at top → menu below the panel.
             pos_x = self.panel_x - (win_w // 2)
             pos_y = self.panel_y
 
         elif self.panel_position == Gtk.PositionType.LEFT:
-            # Panel izquierdo → menú a la derecha del panel.
+            # Panel on the left → menu to the right of the panel.
             pos_x = self.panel_x
             pos_y = self.panel_y - (win_h // 2)
 
         elif self.panel_position == Gtk.PositionType.RIGHT:
-            # Panel derecho → menú a la izquierda del panel.
+            # Panel on the right → menu to the left of the panel.
             pos_x = self.panel_x - win_w
             pos_y = self.panel_y - (win_h // 2)
 
         else:
-            # Orientación desconocida → fallback.
+            # Unknown orientation → fallback.
             pos_x = monitor_geom.x + monitor_geom.width - win_w - 15
             pos_y = monitor_geom.y + monitor_geom.height - win_h - 50
 
-        # Evitar que el menú se salga de los límites del monitor.
+        # Keep the menu within the monitor bounds.
         pos_x = max(monitor_geom.x, min(pos_x, monitor_geom.x + monitor_geom.width - win_w))
         pos_y = max(monitor_geom.y, min(pos_y, monitor_geom.y + monitor_geom.height - win_h))
-
-        print(
-            f"[DEBUG] POSICIÓN CALCULADA: "
-            f"x={pos_x}, y={pos_y}, "
-            f"ancho={win_w}, alto={win_h}, "
-            f"panel_position={self.panel_position}"
-    )
 
         self.move(pos_x, pos_y)
 
     def refresh_and_show(self):
-        """Puebla o actualiza la lista de forma segura y muestra el menú."""
+        """Safely populate or update the list and show the menu."""
         for child in self.list_box.get_children():
             self.list_box.remove(child)
 
@@ -309,7 +296,7 @@ class QuickMenuWindow(Gtk.Window):
             screen = Gdk.Screen.get_default()
             monitor_geom = screen.get_monitor_geometry(0)
             max_height_limit = min(460, int(monitor_geom.height * 0.42))
-            self.scrolled.set_max_content_height(max_height_limit - 50)
+            self.scrolled.set_max_content_height(max_height_limit)
 
             size_group_btn = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -326,13 +313,13 @@ class QuickMenuWindow(Gtk.Window):
 
         self.present()
 
-        # Posicionar cursor en el buscador si está abierto
+        # Position the cursor in the search field if it is open
         self.search_entry.grab_focus()
 
-        # Intentar capturar el Seat. Si Cinnamon lo retiene, se reintentará mediante GLib timeout
+        # Try to grab the Seat. If Cinnamon keeps it, it will be retried via GLib timeout
         GLib.timeout_add(30, self._grab_seat)
 
-        # Fade-in suave
+        # Smooth fade-in
         if not self.get_visible() or self.get_opacity() < 0.9:
             self.set_opacity(0.0)
             if self._fade_timer_id:
@@ -350,7 +337,7 @@ class QuickMenuWindow(Gtk.Window):
             self._fade_timer_id = GLib.timeout_add(15, _fade_in_step)
 
     def _grab_seat(self):
-        """Intenta capturar el Seat. Devuelve True para reintentar si Cinnamon tenía el clic capturado."""
+        """Attempts to grab the Seat. Returns True to retry if Cinnamon had the click captured."""
         if not self.get_visible():
             return False
 
@@ -374,14 +361,14 @@ class QuickMenuWindow(Gtk.Window):
 
                     if status == Gdk.GrabStatus.SUCCESS:
                         self._seat_grabbed = True
-                        return False  # Éxito: detiene el ciclo de reintentos
+                        return False  # Success: stops the retry loop
                     elif status == Gdk.GrabStatus.ALREADY_GRABBED:
-                        return True  # Reintenta automáticamente en el próximo ciclo de 30ms
+                        return True  # Retry automatically on the next 30ms cycle
 
         return False
 
     def _create_item_row(self, item, size_group_btn):
-        """Crea una fila del historial con vista previa limpia y alineación estricta."""
+        """Create a history row with a clean preview and strict alignment."""
         list_row = Gtk.ListBoxRow()
         list_row.item_data = item
 
@@ -393,7 +380,7 @@ class QuickMenuWindow(Gtk.Window):
         grid.set_margin_top(6)
         grid.set_margin_bottom(6)
 
-        # 1. IMAGEN
+        # 1. IMAGE
         if item["type"] == "image":
             if item.get("pixbuf"):
                 img_widget = Gtk.Image.new_from_pixbuf(item["pixbuf"])
@@ -403,13 +390,13 @@ class QuickMenuWindow(Gtk.Window):
                 label = Gtk.Label(label="[Imagen]", xalign=0)
                 grid.attach(label, 0, 0, 1, 1)
 
-            # Espaciador en columna 1 con hexpand=True
+            # Spacer in column 1 with hexpand=True
             spacer = Gtk.Box()
             spacer.set_hexpand(True)
             size_group_btn.add_widget(spacer)
             grid.attach(spacer, 1, 0, 1, 1)
 
-        # 2. ARCHIVOS / CARPETAS
+        # 2. FILES / FOLDERS
         elif item["type"] == "files":
             box_file = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
             icon_file = Gtk.Image.new_from_icon_name("folder-documents-symbolic", Gtk.IconSize.BUTTON)
@@ -428,7 +415,7 @@ class QuickMenuWindow(Gtk.Window):
             size_group_btn.add_widget(spacer)
             grid.attach(spacer, 1, 0, 1, 1)
 
-        # 3. TEXTO
+        # 3. TEXT
         else:
             full_text = item["data"].strip()
 
@@ -453,7 +440,7 @@ class QuickMenuWindow(Gtk.Window):
             if needs_expand:
                 preview_text = preview_text.rstrip() + "..."
 
-            # Ícono indicativo de texto
+            # Text indicator icon
             icon_text = Gtk.Image.new_from_icon_name("edit-paste-symbolic", Gtk.IconSize.BUTTON)
             icon_text.set_valign(Gtk.Align.CENTER)
 
@@ -495,7 +482,7 @@ class QuickMenuWindow(Gtk.Window):
                 size_group_btn.add_widget(spacer)
                 grid.attach(spacer, 1, 0, 1, 1)
 
-        # BOTÓN ANCLAR / PIN (COLUMNA 2)
+        # PIN BUTTON (COLUMN 2)
         is_pinned = item.get("pinned", False)
         btn_pin = Gtk.Button.new_from_icon_name("view-pin-symbolic", Gtk.IconSize.BUTTON)
         btn_pin.set_relief(Gtk.ReliefStyle.NONE)
@@ -512,7 +499,7 @@ class QuickMenuWindow(Gtk.Window):
 
         grid.attach(btn_pin, 2, 0, 1, 1)
 
-        # BOTÓN ELIMINAR (COLUMNA 3)
+        # DELETE BUTTON (COLUMN 3)
         btn_delete = Gtk.Button.new_from_icon_name("window-close-symbolic", Gtk.IconSize.BUTTON)
         btn_delete.set_relief(Gtk.ReliefStyle.NONE)
         btn_delete.set_valign(Gtk.Align.CENTER)
@@ -525,7 +512,7 @@ class QuickMenuWindow(Gtk.Window):
         return list_row
 
     def _toggle_text_expand(self, button, label, full_text, preview_text):
-        """Expande o contrae el texto mostrando el contenido completo o su vista previa de 3 líneas."""
+        """Expand or collapse text by showing the full content or its 3-line preview."""
         if not getattr(button, "expanded", False):
             button.expanded = True
             label.set_text(full_text)
@@ -538,16 +525,16 @@ class QuickMenuWindow(Gtk.Window):
         GLib.idle_add(self._update_position)
 
     def _on_row_activated(self, list_box, row):
-        """Acción ejecutada al hacer clic en cualquier fila de la lista."""
+        """Action executed when any list row is clicked."""
         item = getattr(row, "item_data", None)
         if not item:
             return
 
-        # 1. Liberar la captura de X11 y ocultar de forma síncrona e inmediata
+        # 1. Release the X11 grab and hide immediately and synchronously
         self._release_grab()
-        self.hide()  # Oculta la ventana en el acto, sin dar margen a interrupciones del hilo
+        self.hide()  # Hide the window immediately without leaving room for thread interruptions
 
-        # 2. Delegar la copia al backend
+        # 2. Delegate the copy to the backend
         self.clipboard_manager.copy_item_to_system(item)
 
     def _on_toggle_pin(self, item_id):
@@ -575,10 +562,7 @@ class QuickMenuWindow(Gtk.Window):
             self.on_open_main_window_callback()
 
     def _on_quit_app(self, btn):
-        print("[DEBUG] BOTÓN SALIR PRESIONADO")
         self.hide_animated()
-
-        print(f"[DEBUG] CALLBACK SALIDA = {self.on_quit_app_callback}")
 
         if self.on_quit_app_callback:
             self.on_quit_app_callback()

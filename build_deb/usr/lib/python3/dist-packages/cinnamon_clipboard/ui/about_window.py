@@ -1,4 +1,9 @@
 import gi
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 from pathlib import Path
 
 gi.require_version("Gtk", "3.0")
@@ -10,10 +15,12 @@ from ..i18n import _
 
 
 class AboutWindow(Gtk.AboutDialog):
-    """Muestra la información de Cinnamon Clipboard."""
+    """Displays Cinnamon Clipboard information."""
 
     def __init__(self, parent=None):
         super().__init__()
+
+        self.set_wmclass("cinnamon-clipboard", "CinnamonClipboard")
 
         self.set_transient_for(parent)
         self.set_modal(True)
@@ -26,10 +33,10 @@ class AboutWindow(Gtk.AboutDialog):
         self.set_website_label("GitHub")
         self.set_authors(["Pablo / Vaider13"])
 
-        # 1. Cargar el ícono nativo de la app usando Pixbuf
+        # 1. Load the app's native icon using Pixbuf
         icon_path = Path("/usr/share/icons/hicolor/512x512/apps/cinnamon-clipboard.png")
         if not icon_path.exists():
-            # Fallback para el entorno de desarrollo local
+            # Fallback for the local development environment
             icon_path = Path(__file__).parent.parent.parent / "data" / "icons" / "cinnamon-clipboard.png"
 
         if icon_path.exists():
@@ -39,11 +46,11 @@ class AboutWindow(Gtk.AboutDialog):
                 )
                 self.set_logo(pixbuf)
             except Exception as e:
-                print(f"[ADVERTENCIA] No se pudo cargar el ícono en AboutDialog: {e}")
+                logger.warning("Failed to load icon in AboutDialog: %s", e)
         else:
             self.set_logo_icon_name("cinnamon-clipboard")
 
-        # 2. Asignar el texto explícito de la licencia para que el botón "Licencia" responda
+        # 2. Assign the explicit license text so the "License" button responds correctly
         license_text = _(
             "Cinnamon Clipboard es software libre: usted puede redistribuirlo y/o modificarlo "
             "bajo los términos de la Licencia Pública General GNU publicada por la "
@@ -59,5 +66,5 @@ class AboutWindow(Gtk.AboutDialog):
         self.connect("response", self._on_response)
 
     def _on_response(self, dialog, response_id):
-        """Cierra la ventana cuando el usuario responde al diálogo."""
+        """Close the window when the user responds to the dialog."""
         self.destroy()

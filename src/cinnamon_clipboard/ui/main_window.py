@@ -14,7 +14,7 @@ from .about_window import AboutWindow
 
 
 class MainWindow(Gtk.Window):
-    """Ventana principal de gestión del historial del portapapeles."""
+    """Main clipboard history management window."""
 
     def __init__(self, clipboard_manager, on_quit_app_callback=None):
         super().__init__(title=_("Clipboard Manager"))
@@ -27,11 +27,11 @@ class MainWindow(Gtk.Window):
         self.set_default_size(680, 520)
         self.set_position(Gtk.WindowPosition.CENTER)
 
-        # Suscribir para recibir notificaciones cuando cambie el portapapeles
+        # Subscribe to receive notifications when the clipboard changes
         self.clipboard_manager.add_history_listener(self.refresh_list)
         self.connect("destroy", self._on_destroy)
 
-        # Contenedor principal
+        # Main container
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         main_box.set_margin_top(12)
         main_box.set_margin_bottom(12)
@@ -39,7 +39,7 @@ class MainWindow(Gtk.Window):
         main_box.set_margin_end(12)
         self.add(main_box)
 
-        # 1. Barra superior: Búsqueda y Filtros
+        # 1. Top bar: search and filters
         top_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         
         self.search_entry = Gtk.SearchEntry()
@@ -47,7 +47,7 @@ class MainWindow(Gtk.Window):
         self.search_entry.connect("search-changed", self._on_search_changed)
         top_box.pack_start(self.search_entry, True, True, 0)
 
-        # Botones de filtro por categoría
+        # Category filter buttons
         filter_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         filter_box.set_valign(Gtk.Align.CENTER)
         
@@ -72,7 +72,7 @@ class MainWindow(Gtk.Window):
 
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
-        # 2. Área de lista con scroll
+        # 2. Scrollable list area
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_shadow_type(Gtk.ShadowType.IN)
@@ -83,7 +83,7 @@ class MainWindow(Gtk.Window):
 
         main_box.pack_start(scrolled, True, True, 0)
 
-        # 3. Barra inferior: Acciones generales
+        # 3. Bottom bar: general actions
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -112,11 +112,11 @@ class MainWindow(Gtk.Window):
 
 
 
-        # Cargar datos iniciales
+        # Load initial data
         self.refresh_list()
 
     def _open_about(self, btn):
-        """Abre la ventana Acerca de y la mantiene asociada a la ventana principal."""
+        """Open the About window and keep it associated with the main window."""
         about_window = AboutWindow(parent=self)
         about_window.show_all()
 
@@ -131,11 +131,11 @@ class MainWindow(Gtk.Window):
             self.pref_window.present()
 
     def _on_destroy(self, widget):
-        """Remueve la suscripción cuando se cierra la ventana."""
+        """Remove the subscription when the window is closed."""
         self.clipboard_manager.remove_history_listener(self.refresh_list)
 
     def refresh_list(self):
-        """Redibuja la lista aplicando el filtro de categoría y el texto de búsqueda."""
+        """Redraw the list applying the category filter and search text."""
         for child in self.list_box.get_children():
             self.list_box.remove(child)
 
@@ -145,11 +145,11 @@ class MainWindow(Gtk.Window):
         for item in history:
             item_type = item.get("type")
 
-            # Filtro por tipo
+            # Filter by type
             if self.current_filter_type != "ALL" and item_type != self.current_filter_type:
                 continue
 
-            # Filtro por texto / búsqueda
+            # Filter by text / search
             if query:
                 preview = str(item.get("preview", "")).lower()
                 data_str = str(item.get("data", "")).lower()
@@ -162,7 +162,7 @@ class MainWindow(Gtk.Window):
         self.list_box.show_all()
 
     def _create_row_widget(self, item):
-        """Construye la fila para un elemento del historial."""
+        """Build the row for a history item."""
         list_row = Gtk.ListBoxRow()
         
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
@@ -173,7 +173,7 @@ class MainWindow(Gtk.Window):
 
         item_type = item.get("type")
 
-        # 1. Ícono o miniatura
+        # 1. Icon or thumbnail
         if item_type == "image":
             if item.get("pixbuf"):
                 scaled = self.clipboard_manager._scale_pixbuf(item["pixbuf"], target_size=80)
@@ -211,19 +211,19 @@ class MainWindow(Gtk.Window):
             info_label.set_max_width_chars(50)
             box.pack_start(info_label, True, True, 0)
 
-        # 2. Botones de acción
+        # 2. Action buttons
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
         btn_box.set_valign(Gtk.Align.CENTER)
 
-        # Botón de Fijar / Anclar (view-pin-symbolic)
+        # Pin button (view-pin-symbolic)
         is_pinned = item.get("pinned", False)
         btn_pin = Gtk.Button.new_from_icon_name("view-pin-symbolic", Gtk.IconSize.BUTTON)
         btn_pin.set_relief(Gtk.ReliefStyle.NONE)
         
         if not is_pinned:
-            btn_pin.set_opacity(0.30)  # Traslúcido / grisáceo cuando no está anclado
+            btn_pin.set_opacity(0.30)  # Translucent / gray when not pinned
         else:
-            btn_pin.set_opacity(1.0)   # Blanco brillante / pleno cuando está anclado
+            btn_pin.set_opacity(1.0)   # Bright / full white when pinned
 
         btn_pin.set_tooltip_text(_("Unpin") if is_pinned else _("Pin to top"))
         btn_pin.connect("clicked", lambda b, i_id=item["id"]: self._on_toggle_pin(i_id))
@@ -267,6 +267,6 @@ class MainWindow(Gtk.Window):
         self.clipboard_manager.clear_history()
 
     def _on_quit_clicked(self, btn):
-        """Solicita a la aplicación principal el cierre completo."""
+        """Request the main application to close completely."""
         if self.on_quit_app_callback:
             self.on_quit_app_callback()

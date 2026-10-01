@@ -7,6 +7,10 @@ except ImportError:
 
 import gi
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 gi.require_version("Gtk", "3.0")
 try:
     gi.require_version("Keybinder", "3.0")
@@ -26,7 +30,7 @@ from .ui.tray import TrayIcon
 
 
 class ClipboardApp(Gtk.Application):
-    """Aplicación principal de Cinnamon Clipboard en GTK3."""
+    """Main Cinnamon Clipboard application in GTK3."""
 
     def __init__(self):
         super().__init__(
@@ -40,13 +44,14 @@ class ClipboardApp(Gtk.Application):
         self._keybinder_initialized = False
 
     def open_main_window(self):
-        """Abre la ventana principal con un solo clic o la trae al frente."""
+        """Open the main window with a single click or bring it to the front."""
         if self.main_window is None:
             self.main_window = MainWindow(
                 self.clipboard_manager,
                 on_quit_app_callback=self.quit_app,
             )
             self.main_window.set_application(self)
+            self.main_window.set_wmclass("cinnamon-clipboard", "CinnamonClipboard")
             self.main_window.connect("destroy", self._on_main_window_destroyed)
             self.main_window.show_all()
             self.main_window.present()
@@ -58,23 +63,22 @@ class ClipboardApp(Gtk.Application):
         self.main_window = None
 
     def quit_app(self):
-        """Cierra completamente la aplicación y libera el servicio."""
-        print("[DEBUG] quit_app() FUE LLAMADO")
+        """Fully close the application and release the service."""
         if self.quick_menu:
             self.quick_menu.destroy()
         if self.main_window:
             self.main_window.destroy()
-        self.release()  # Cancela el self.hold() para salir del loop principal de GTK
+        self.release()  # Releases self.hold() to exit the GTK main loop
         self.quit()
 
     def update_global_shortcut(self, shortcut_str):
-        """Actualiza el atajo global registrado cuando el usuario lo cambia en preferencias."""
+        """Update the registered global shortcut when the user changes it in preferences."""
         self._setup_global_shortcut(shortcut_str)
 
     def _setup_global_shortcut(self, shortcut_str):
-        """Registra o actualiza el atajo de teclado global con Keybinder de forma segura."""
+        """Register or update the global keyboard shortcut with Keybinder safely."""
         if not KEYBINDER_AVAILABLE:
-            print("[ADVERTENCIA] gir1.2-keybinder-3.0 no está instalado. Atajo global desactivado.")
+            logger.warning("gir1.2-keybinder-3.0 is not installed. Global shortcut disabled.")
             return
 
         if not self._keybinder_initialized:
@@ -82,18 +86,17 @@ class ClipboardApp(Gtk.Application):
                 Keybinder.init()
                 self._keybinder_initialized = True
             except Exception as e:
-                print(f"[ERROR] Falló la inicialización de Keybinder: {e}")
+                logger.error("Failed to initialize Keybinder: %s", e)
                 return
 
-        # Evitar re-registrar si es exactamente la misma combinación
+        # Avoid re-registering if it is exactly the same combination
         if self.current_shortcut == shortcut_str and shortcut_str is not None:
             return
 
-        # Desvincular atajo anterior de forma segura
+        # Unbind the previous shortcut safely
         if self.current_shortcut:
             try:
                 Keybinder.unbind(self.current_shortcut)
-                print(f"[ATAJO GLOBAL] Desvinculado atajo previo: {self.current_shortcut}")
             except Exception:
                 pass
             self.current_shortcut = None
@@ -105,23 +108,26 @@ class ClipboardApp(Gtk.Application):
             success = Keybinder.bind(shortcut_str, self._on_shortcut_triggered, None)
             if success:
                 self.current_shortcut = shortcut_str
-                print(f"[ATAJO GLOBAL] Registrado con éxito: {shortcut_str}")
+                logger.info("Global shortcut registered successfully: %s", shortcut_str)
             else:
-                print(f"[ERROR] No se pudo vincular el atajo: {shortcut_str}")
+                logger.info(
+                    "Global shortcut registered successfully: %s",
+                    shortcut_str
+                )
         except Exception as e:
-            print(f"[ERROR] Fallo al vincular atajo {shortcut_str}: {e}")
+            logger.error("Failed to bind shortcut %s: %s", shortcut_str, e)
 
     def _on_shortcut_triggered(self, keystring, user_data):
-        """Callback ejecutado al presionar la combinación de teclas global."""
-        print(f"[DIAGNÓSTICO ATAJO] Evento Keybinder capturado: {keystring}")
+        """Callback executed when the global key combination is pressed."""
+        logger.debug("Global shortcut triggered: %s", keystring)
         if self.quick_menu:
             GLib.idle_add(self.quick_menu.toggle_window)
 
     def do_activate(self):
-        # Mantiene el proceso activo en segundo plano
+        # Keep the process alive in the background
         self.hold()
 
-        # Mostrar aviso si la configuración fue restaurada automáticamente
+        # Show a warning if the configuration was restored automatically
         if self.clipboard_manager.settings.config_was_reset:
             dialog = Gtk.MessageDialog(
                 parent=None,
@@ -139,7 +145,7 @@ class ClipboardApp(Gtk.Application):
 
             self.clipboard_manager.settings.config_was_reset = False
 
-        # 1. Menú desplegable del Tray
+        # 1. Tray dropdown menu
         if self.quick_menu is None:
             self.quick_menu = QuickMenuWindow(
                 clipboard_manager=self.clipboard_manager,
@@ -148,7 +154,7 @@ class ClipboardApp(Gtk.Application):
             )
             self.quick_menu.set_application(self)
 
-        # 2. Inicializar el ícono de la bandeja del sistema si no existe
+        # 2. Initialize the system tray icon if it does not exist
         if self.tray_icon is None:
             self.tray_icon = TrayIcon(
                 app=self,
@@ -156,11 +162,11 @@ class ClipboardApp(Gtk.Application):
                 menu_window=self.quick_menu,
             )
 
-        # 3. Registrar atajo de teclado global desde la configuración
+        # 3. Register the global keyboard shortcut from the configuration
         shortcut = self.clipboard_manager.settings.get("shortcut")
         self._setup_global_shortcut(shortcut)
 
-        # 4. Iniciar el monitoreo del portapapeles
+        # 4. Start monitoring the clipboard
         self.clipboard_manager.connect_to_changes()
 
 
