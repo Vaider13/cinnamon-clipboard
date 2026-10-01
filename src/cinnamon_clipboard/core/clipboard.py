@@ -1,6 +1,5 @@
 import hashlib
 import os
-import subprocess
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
@@ -16,6 +15,7 @@ from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
 from ..i18n import _
 from .database import HistoryDatabase
 from .settings import SettingsManager
+from .x11_file_clipboard import X11FileClipboard
 
 
 class ClipboardManager:
@@ -24,6 +24,7 @@ class ClipboardManager:
     def __init__(self):
         self.settings = SettingsManager()
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+        self.x11_file_clipboard = X11FileClipboard()
         self.change_count = 0
         self.max_history = self.settings.get("max_history")
 
@@ -155,6 +156,7 @@ class ClipboardManager:
             is_file_clipboard = (
                 "text/uri-list" in target_names
                 or "x-special/gnome-copied-files" in target_names
+                or "x-special/mate-copied-files" in target_names
             )
 
             # -----------------------------------------------------------------
@@ -240,30 +242,31 @@ class ClipboardManager:
 
 
     def set_files(self, file_paths):
-        """Publish files to the clipboard using xclip with the x-special/gnome-copied-files header required by Nemo."""
-        uris = [GLib.filename_to_uri(p, None) for p in file_paths if os.path.exists(p)]
-        if not uris:
-            return
-
-        gnome_payload = "copy\n" + "\n".join(uris)
-
+        """Publish files to the clipboard using the native X11 file clipboard owner."""
         try:
-            process = subprocess.Popen(
-                ["xclip", "-selection", "clipboard", "-target", "x-special/gnome-copied-files"],
-                stdin=subprocess.PIPE
-            )
-            process.communicate(input=gnome_payload.encode("utf-8"))
+            success = self.x11_file_clipboard.set_files(file_paths)
 
-            self.is_self_copying = True
+            if success:
+                self.is_self_copying = True
+            else:
+                self.is_self_copying = False
+
         except Exception as e:
             self.is_self_copying = False
 
     def _read_uri_list(self):
         """Extract local paths from the file selection in text/uri-list or gnome-copied-files format."""
-        selection_data = self.clipboard.wait_for_contents(Gdk.Atom.intern("x-special/gnome-copied-files", False))
+        selection_data = self.clipboard.wait_for_contents(
+            Gdk.Atom.intern("x-special/mate-copied-files", False)
+        )
         if not selection_data or not selection_data.get_data():
-            selection_data = self.clipboard.wait_for_contents(Gdk.Atom.intern("text/uri-list", False))
-
+            selection_data = self.clipboard.wait_for_contents(
+                Gdk.Atom.intern("x-special/gnome-copied-files", False)
+            )
+        if not selection_data or not selection_data.get_data():
+            selection_data = self.clipboard.wait_for_contents(
+                Gdk.Atom.intern("text/uri-list", False)
+            )
         if not selection_data:
             return None
 
