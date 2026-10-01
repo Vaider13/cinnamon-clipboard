@@ -52,13 +52,14 @@ class AboutWindow(Gtk.AboutDialog):
 
         # 2. Assign the explicit license text so the "License" button responds correctly
         license_text = _(
-            "Cinnamon Clipboard es software libre: usted puede redistribuirlo y/o modificarlo "
-            "bajo los términos de la Licencia Pública General GNU publicada por la "
-            "Free Software Foundation, ya sea la versión 3 de la Licencia, o (a su elección) "
-            "cualquier versión posterior.\n\n"
-            "Este programa se distribuye con la esperanza de que sea útil, pero SIN NINGUNA GARANTÍA; "
-            "sin siquiera la garantía implícita de COMERCIABILIDAD o IDONEIDAD PARA UN PROPÓSITO PARTICULAR. "
-            "Vea la Licencia Pública General GNU para más detalles."
+            "Cinnamon Clipboard is free software: you can redistribute it and/or modify it "
+            "under the terms of the GNU General Public License as published by the "
+            "Free Software Foundation, either version 3 of the License, or "
+            "(at your option) any later version.\n\n"
+            "This program is distributed in the hope that it will be useful, "
+            "but WITHOUT ANY WARRANTY; without even the implied warranty of "
+            "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. "
+            "See the GNU General Public License for more details."
         )
         self.set_license(license_text)
         self.set_wrap_license(True)

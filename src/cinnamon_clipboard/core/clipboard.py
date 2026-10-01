@@ -10,7 +10,7 @@ gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 gi.require_version("GLib", "2.0")
 
-from gi.repository import Gdk, GdkPixbuf, GLib, Gtk
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
 from ..i18n import _
 from .database import HistoryDatabase
@@ -240,18 +240,62 @@ class ClipboardManager:
 
         return False
 
+    def _show_notification(self, title, message):
+        """Show a desktop notification using the standard D-Bus notification service."""
+        notification = Gio.Notification.new(title)
+        notification.set_body(message)
+        notification.set_icon(Gio.ThemedIcon.new("cinnamon-clipboard"))
 
+        app = Gio.Application.get_default()
+        if app is not None:
+            app.send_notification(None, notification)
+    
     def set_files(self, file_paths):
-        """Publish files to the clipboard using the native X11 file clipboard owner."""
+        """Publish available files to the clipboard and notify about missing files."""
+        missing_paths = [
+            path for path in file_paths
+            if not os.path.exists(path)
+        ]
+
+        available_paths = [
+            path for path in file_paths
+            if os.path.exists(path)
+        ]
+
+        if missing_paths:
+            missing_count = len(missing_paths)
+
+            if available_paths:
+                message = _(
+                    "Only some files were added to the clipboard because some are no longer available."
+                )
+            elif missing_count == 1:
+                message = _("The file is no longer available for copying.")
+            else:
+                message = _(
+                    "%(count)d files are no longer available for copying."
+                ) % {"count": missing_count}
+
+            self._show_notification(
+                _("Cinnamon Clipboard"),
+                message,
+            )
+
+        if not available_paths:
+            self.is_self_copying = False
+            return
+
         try:
-            success = self.x11_file_clipboard.set_files(file_paths)
+            success = self.x11_file_clipboard.set_files(available_paths)
 
             if success:
                 self.is_self_copying = True
             else:
+                print("X11 file clipboard failed to acquire ownership.")
                 self.is_self_copying = False
 
         except Exception as e:
+            print(f"X11 file clipboard error: {e}")
             self.is_self_copying = False
 
     def _read_uri_list(self):
@@ -447,6 +491,12 @@ class ClipboardManager:
                 self.is_self_copying = True
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
                 self.clipboard.set_image(pixbuf)
+            else:
+                self.is_self_copying = False
+                self._show_notification(
+                    _("Cinnamon Clipboard"),
+                    _("The image is no longer available for copying."),
+                )
 
         elif item_type == "files":
             self.set_files(item["data"])

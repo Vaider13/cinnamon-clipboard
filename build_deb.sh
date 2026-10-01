@@ -36,7 +36,7 @@ Package: $PACKAGE_NAME
 Version: $VERSION
 Architecture: $ARCH
 Maintainer: Pablo / Vaider13 <vaider13@github.com>
-Depends: python3, python3-gi, gir1.2-gtk-3.0, gir1.2-xapp-1.0, gir1.2-keybinder-3.0, xclip, python3-setproctitle
+Depends: python3, python3-gi, gir1.2-gtk-3.0, gir1.2-xapp-1.0, gir1.2-keybinder-3.0, python3-setproctitle, python3-xlib
 Section: utils
 Priority: optional
 Description: Clipboard manager for Cinnamon and Linux desktops

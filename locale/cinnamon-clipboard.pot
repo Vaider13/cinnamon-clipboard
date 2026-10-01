@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-28 10:41-0300\n"
+"POT-Creation-Date: 2026-10-01 15:20-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,56 +22,89 @@ msgstr ""
 msgid "Image (%(width)d×%(height)d px)"
 msgstr ""
 
-#: src/cinnamon_clipboard/core/clipboard.py:297
+#: src/cinnamon_clipboard/core/clipboard.py:270
+msgid ""
+"Only some files were added to the clipboard because some are no longer "
+"available."
+msgstr ""
+
+#: src/cinnamon_clipboard/core/clipboard.py:273
+msgid "The file is no longer available for copying."
+msgstr ""
+
+#: src/cinnamon_clipboard/core/clipboard.py:276
+#, python-format
+msgid "%(count)d files are no longer available for copying."
+msgstr ""
+
+#: src/cinnamon_clipboard/core/clipboard.py:280
+#: src/cinnamon_clipboard/core/clipboard.py:497
+msgid "Cinnamon Clipboard"
+msgstr ""
+
+#: src/cinnamon_clipboard/core/clipboard.py:338
 #, python-format
 msgid "File: %(name)s"
 msgstr ""
 
-#: src/cinnamon_clipboard/core/clipboard.py:300
+#: src/cinnamon_clipboard/core/clipboard.py:341
 #, python-format
 msgid "%(name)s and %(count)d more file(s)"
 msgstr ""
 
-#: src/cinnamon_clipboard/app.py:123
+#: src/cinnamon_clipboard/core/clipboard.py:498
+msgid "The image is no longer available for copying."
+msgstr ""
+
+#: src/cinnamon_clipboard/app.py:137
 msgid "Configuration restored"
 msgstr ""
 
-#: src/cinnamon_clipboard/app.py:126
+#: src/cinnamon_clipboard/app.py:140
 msgid ""
 "The configuration file contained invalid data and was reset to the default "
 "values."
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/about_window.py:21
+#: src/cinnamon_clipboard/ui/about_window.py:30
 msgid "Clipboard manager for Linux desktops."
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/menu_window.py:57
-msgid "Search..."
+#: src/cinnamon_clipboard/ui/about_window.py:55
+msgid ""
+"Cinnamon Clipboard es software libre: usted puede redistribuirlo y/o "
+"modificarlo bajo los términos de la Licencia Pública General GNU publicada "
+"por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a su "
+"elección) cualquier versión posterior.\n"
+"\n"
+"Este programa se distribuye con la esperanza de que sea útil, pero SIN "
+"NINGUNA GARANTÍA; sin siquiera la garantía implícita de COMERCIABILIDAD o "
+"IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Vea la Licencia Pública General GNU "
+"para más detalles."
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/menu_window.py:80
+#: src/cinnamon_clipboard/ui/menu_window.py:56
+msgid "Search.."
+msgstr ""
+
+#: src/cinnamon_clipboard/ui/menu_window.py:79
 #: src/cinnamon_clipboard/ui/main_window.py:91
 msgid "Clear all"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/menu_window.py:85
+#: src/cinnamon_clipboard/ui/menu_window.py:84
 #: src/cinnamon_clipboard/ui/main_window.py:102
 #: src/cinnamon_clipboard/ui/preferences_window.py:15
 msgid "Preferences"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/menu_window.py:91
-msgid "Quit Cinnamon Clipboard"
+#: src/cinnamon_clipboard/ui/menu_window.py:90
+#: src/cinnamon_clipboard/ui/main_window.py:107
+msgid "Close Cinnamon Clipboard"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/menu_window.py:99
+#: src/cinnamon_clipboard/ui/menu_window.py:98
 msgid "Open application"
-msgstr ""
-
-#: src/cinnamon_clipboard/ui/menu_window.py:397
-#: src/cinnamon_clipboard/ui/main_window.py:184
-msgid "[Image]"
 msgstr ""
 
 #: src/cinnamon_clipboard/ui/menu_window.py:497
@@ -121,8 +154,8 @@ msgstr ""
 msgid "Quit"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/main_window.py:107
-msgid "Close Cinnamon Clipboard"
+#: src/cinnamon_clipboard/ui/main_window.py:184
+msgid "[Image]"
 msgstr ""
 
 #: src/cinnamon_clipboard/ui/main_window.py:188
@@ -137,54 +170,54 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:55
+#: src/cinnamon_clipboard/ui/preferences_window.py:58
 msgid "History and Privacy"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:59
+#: src/cinnamon_clipboard/ui/preferences_window.py:62
 msgid "Save history (Private Mode):"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:68
+#: src/cinnamon_clipboard/ui/preferences_window.py:71
 msgid "History limit:"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:104
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
 msgid "Content Capture"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:108
+#: src/cinnamon_clipboard/ui/preferences_window.py:111
 msgid "Capture images:"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:117
+#: src/cinnamon_clipboard/ui/preferences_window.py:120
 msgid "Capture files and folders:"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:134
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
 msgid "System and Shortcut"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:138
+#: src/cinnamon_clipboard/ui/preferences_window.py:141
 msgid "Start with session:"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:147
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
 msgid "Tray menu shortcut:"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:161
+#: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:165
+#: src/cinnamon_clipboard/ui/preferences_window.py:168
 msgid "Save"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:181
+#: src/cinnamon_clipboard/ui/preferences_window.py:184
 msgid "Click to assign"
 msgstr ""
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:186
+#: src/cinnamon_clipboard/ui/preferences_window.py:189
 msgid "Press a key combination..."
 msgstr ""

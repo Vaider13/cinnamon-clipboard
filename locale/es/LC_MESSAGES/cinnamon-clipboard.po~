@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinnamon Clipboard 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-01 15:45-0300\n"
+"POT-Creation-Date: 2026-10-01 15:20-0300\n"
 "PO-Revision-Date: 2026-09-28 10:44-0300\n"
 "Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -27,22 +27,21 @@ msgid ""
 "Only some files were added to the clipboard because some are no longer "
 "available."
 msgstr ""
-"Solo algunos archivos se agregaron al portapapeles porque algunos ya no "
-"están disponibles."
 
 #: src/cinnamon_clipboard/core/clipboard.py:273
 msgid "The file is no longer available for copying."
-msgstr "El archivo ya no está disponible para copiar."
+msgstr ""
 
 #: src/cinnamon_clipboard/core/clipboard.py:276
 #, python-format
 msgid "%(count)d files are no longer available for copying."
-msgstr "%(count)d archivos ya no están disponibles para copiar."
+msgstr ""
 
 #: src/cinnamon_clipboard/core/clipboard.py:280
 #: src/cinnamon_clipboard/core/clipboard.py:497
+#, fuzzy
 msgid "Cinnamon Clipboard"
-msgstr "Portapapeles de Cinnamon"
+msgstr "Salir de Cinnamon Clipboard"
 
 #: src/cinnamon_clipboard/core/clipboard.py:338
 #, python-format
@@ -56,7 +55,7 @@ msgstr "%(name)s y %(count)d archivo(s) más"
 
 #: src/cinnamon_clipboard/core/clipboard.py:498
 msgid "The image is no longer available for copying."
-msgstr "La imagen ya no está disponible para copiar."
+msgstr ""
 
 #: src/cinnamon_clipboard/app.py:137
 msgid "Configuration restored"
@@ -76,25 +75,16 @@ msgstr "Gestor de portapapeles para escritorios Linux."
 
 #: src/cinnamon_clipboard/ui/about_window.py:55
 msgid ""
-"Cinnamon Clipboard is free software: you can redistribute it and/or modify "
-"it under the terms of the GNU General Public License as published by the "
-"Free Software Foundation, either version 3 of the License, or (at your "
-"option) any later version.\n"
-"\n"
-"This program is distributed in the hope that it will be useful, but WITHOUT "
-"ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or "
-"FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for "
-"more details."
-msgstr ""
 "Cinnamon Clipboard es software libre: usted puede redistribuirlo y/o "
 "modificarlo bajo los términos de la Licencia Pública General GNU publicada "
-"por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a "
-"su elección) cualquier versión posterior.\n"
+"por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a su "
+"elección) cualquier versión posterior.\n"
 "\n"
 "Este programa se distribuye con la esperanza de que sea útil, pero SIN "
 "NINGUNA GARANTÍA; sin siquiera la garantía implícita de COMERCIABILIDAD o "
 "IDONEIDAD PARA UN PROPÓSITO PARTICULAR. Vea la Licencia Pública General GNU "
 "para más detalles."
+msgstr ""
 
 #: src/cinnamon_clipboard/ui/menu_window.py:56
 #, fuzzy
