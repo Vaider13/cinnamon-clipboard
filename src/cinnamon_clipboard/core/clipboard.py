@@ -434,8 +434,9 @@ class ClipboardManager:
         self._notify_history_changed()
 
     def promote_item(self, item_id):
-        """Move an item to the beginning of its respective group (pinned or unpinned)."""
+        """Move an item to the beginning of its respective group and save the new order."""
         target_item = None
+
         for item in self.history:
             if item["id"] == item_id:
                 target_item = item
@@ -444,21 +445,26 @@ class ClipboardManager:
         if not target_item:
             return
 
-        # Remove from its current position
+        # Remove the item from its current position.
         self.history.remove(target_item)
 
         if target_item.get("pinned", False):
-            # If it is pinned: move it to the top (position 0)
+            # If it is pinned: move it to the top.
             self.history.insert(0, target_item)
         else:
-            # If it is not pinned: move it just below all pinned items
+            # If it is unpinned: move it just below all pinned items.
             insert_idx = 0
+
             for idx, h_item in enumerate(self.history):
                 if h_item.get("pinned", False):
                     insert_idx = idx + 1
                 else:
                     break
+
             self.history.insert(insert_idx, target_item)
+
+        # Persist the complete history order.
+        self.db.save_order(self.history)
 
         self._notify_history_changed()
 

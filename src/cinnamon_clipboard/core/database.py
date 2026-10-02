@@ -32,18 +32,12 @@ class HistoryDatabase:
                     preview TEXT NOT NULL,
                     data_path TEXT,
                     pinned INTEGER DEFAULT 0,
+                    position INTEGER NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+
             
-            # Migration in case the table was created without the 'pinned' column
-            cursor.execute("PRAGMA table_info(history)")
-            columns = [col[1] for col in cursor.fetchall()]
-            if "pinned" not in columns:
-                cursor.execute("ALTER TABLE history ADD COLUMN pinned INTEGER DEFAULT 0")
-
-            conn.commit()
-
     def load_history(self, limit=50):
         """Load all pinned items and up to 'limit' unpinned items."""
         items = []
@@ -55,7 +49,7 @@ class HistoryDatabase:
                 SELECT id, item_type, data, preview, data_path, pinned
                 FROM history
                 WHERE pinned = 1
-                ORDER BY id DESC
+                ORDER BY position ASC
                 """
             )
             pinned_rows = cursor.fetchall()
@@ -65,7 +59,7 @@ class HistoryDatabase:
                 SELECT id, item_type, data, preview, data_path, pinned
                 FROM history
                 WHERE pinned = 0
-                ORDER BY id DESC
+                ORDER BY position ASC
                 LIMIT ?
                 """,
                 (limit,)
@@ -96,7 +90,7 @@ class HistoryDatabase:
         return items
 
     def add_item(self, item_type, data, preview, data_path=None):
-        """Insert a new item as unpinned by default."""
+        """Insert a new item at the beginning of the history."""
         if item_type == "files" and isinstance(data, list):
             stored_data = json.dumps(data)
         else:
@@ -104,12 +98,42 @@ class HistoryDatabase:
 
         with self._get_connection() as conn:
             cursor = conn.cursor()
+
+            # Make room for the new item at position 0.
             cursor.execute(
-                "INSERT INTO history (item_type, data, preview, data_path, pinned) VALUES (?, ?, ?, ?, 0)",
+                "UPDATE history SET position = position + 1"
+            )
+
+            cursor.execute(
+                """
+                INSERT INTO history (
+                    item_type,
+                    data,
+                    preview,
+                    data_path,
+                    pinned,
+                    position
+                )
+                VALUES (?, ?, ?, ?, 0, 0)
+                """,
                 (item_type, stored_data, preview, data_path)
             )
+
             conn.commit()
             return cursor.lastrowid
+
+    def save_order(self, items):
+        """Persist the current history order."""
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+
+            for position, item in enumerate(items):
+                cursor.execute(
+                    "UPDATE history SET position = ? WHERE id = ?",
+                    (position, item["id"])
+                )
+
+            conn.commit()
 
     def toggle_pin(self, item_id, is_pinned):
         """Mark or unmark an item as pinned."""

@@ -84,6 +84,7 @@ class ClipboardApp(Gtk.Application):
         if not self._keybinder_initialized:
             try:
                 Keybinder.init()
+                Keybinder.set_use_cooked_accelerators(False)
                 self._keybinder_initialized = True
             except Exception as e:
                 logger.error("Failed to initialize Keybinder: %s", e)
@@ -108,11 +109,14 @@ class ClipboardApp(Gtk.Application):
             success = Keybinder.bind(shortcut_str, self._on_shortcut_triggered, None)
             if success:
                 self.current_shortcut = shortcut_str
-                logger.info("Global shortcut registered successfully: %s", shortcut_str)
-            else:
                 logger.info(
                     "Global shortcut registered successfully: %s",
-                    shortcut_str
+                    shortcut_str,
+                )
+            else:
+                logger.warning(
+                    "Failed to register global shortcut: %s",
+                    shortcut_str,
                 )
         except Exception as e:
             logger.error("Failed to bind shortcut %s: %s", shortcut_str, e)

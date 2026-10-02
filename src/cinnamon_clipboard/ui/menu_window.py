@@ -1,4 +1,5 @@
 import os
+import logging
 import gi
 
 gi.require_version("Gtk", "3.0")
@@ -11,6 +12,8 @@ from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
 from ..i18n import _
 from .preferences_window import PreferencesWindow
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -203,11 +206,24 @@ class QuickMenuWindow(Gtk.Window):
         return False
 
     def _on_button_press(self, widget, event):
-        """If the click occurred outside the menu rectangle, close it."""
-        alloc = self.get_allocation()
-        if event.x < 0 or event.x >= alloc.width or event.y < 0 or event.y >= alloc.height:
+        """Close the menu when the pointer is clicked outside the menu window."""
+        window = self.get_window()
+
+        if window is None:
+            return False
+
+        win_x, win_y = self.get_position()
+        allocation = self.get_allocation()
+
+        inside = (
+            win_x <= event.x_root < win_x + allocation.width
+            and win_y <= event.y_root < win_y + allocation.height
+        )
+
+        if not inside:
             self.hide_animated()
             return True
+
         return False
 
     def _update_position(self):
@@ -283,6 +299,7 @@ class QuickMenuWindow(Gtk.Window):
 
     def refresh_and_show(self):
         """Safely populate or update the list and show the menu."""
+
         for child in self.list_box.get_children():
             self.list_box.remove(child)
 
@@ -296,6 +313,8 @@ class QuickMenuWindow(Gtk.Window):
             screen = Gdk.Screen.get_default()
             monitor_geom = screen.get_monitor_geometry(0)
             max_height_limit = min(460, int(monitor_geom.height * 0.42))
+
+            self.scrolled.set_min_content_height(1)
             self.scrolled.set_max_content_height(max_height_limit)
 
             size_group_btn = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
@@ -306,6 +325,11 @@ class QuickMenuWindow(Gtk.Window):
 
         self.list_box.invalidate_filter()
         self.show_all()
+
+        # Always start the menu at the top of the history.
+        vadjustment = self.scrolled.get_vadjustment()
+        vadjustment.set_value(vadjustment.get_lower())
+
         self._update_position()
 
         if self.get_window():
@@ -528,6 +552,7 @@ class QuickMenuWindow(Gtk.Window):
         """Action executed when any list row is clicked."""
         item = getattr(row, "item_data", None)
         if not item:
+            logger.warning("[QuickMenu] Row activated but no item_data found.")
             return
 
         # 1. Release the X11 grab and hide immediately and synchronously

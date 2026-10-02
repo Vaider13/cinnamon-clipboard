@@ -73,15 +73,15 @@ class MainWindow(Gtk.Window):
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
         # 2. Scrollable list area
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled.set_shadow_type(Gtk.ShadowType.IN)
+        self.scrolled = Gtk.ScrolledWindow()
+        self.scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scrolled.set_shadow_type(Gtk.ShadowType.IN)
 
         self.list_box = Gtk.ListBox()
         self.list_box.set_selection_mode(Gtk.SelectionMode.NONE)
-        scrolled.add(self.list_box)
+        self.scrolled.add(self.list_box)
 
-        main_box.pack_start(scrolled, True, True, 0)
+        main_box.pack_start(self.scrolled, True, True, 0)
 
         # 3. Bottom bar: general actions
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
@@ -258,7 +258,11 @@ class MainWindow(Gtk.Window):
         self.clipboard_manager.toggle_pin_item(item_id)
 
     def _on_copy_item(self, item):
+        """Copy an item and scroll the history back to the top."""
         self.clipboard_manager.copy_item_to_system(item)
+
+        vadjustment = self.scrolled.get_vadjustment()
+        vadjustment.set_value(vadjustment.get_lower())
 
     def _on_delete_item(self, item_id):
         self.clipboard_manager.remove_item(item_id)
