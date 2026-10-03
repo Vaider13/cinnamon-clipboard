@@ -469,17 +469,18 @@ class ClipboardManager:
         self._notify_history_changed()
 
     def toggle_pin_item(self, item_id):
-        """Toggle the pinned state of an item and reorder the history."""
+        """Toggle the pinned state of an item and persist the new order."""
         for item in self.history:
             if item["id"] == item_id:
                 new_state = not item.get("pinned", False)
                 item["pinned"] = new_state
                 self.db.toggle_pin(item_id, new_state)
                 break
+        else:
+            return
 
-        # Reorder: pinned items first
-        self.history.sort(key=lambda x: (not x.get("pinned", False), -x["id"]))
-        self._notify_history_changed()
+        # Reorder the item according to its new pinned state.
+        self.promote_item(item_id)
 
     def copy_item_to_system(self, item):
         """Unified method to publish any item type to the system clipboard."""
