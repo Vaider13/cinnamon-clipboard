@@ -224,7 +224,18 @@ class ClipboardManager:
         # -----------------------------------------------------------------
         text = self.clipboard.wait_for_text()
         if text and text.strip():
+            text_lines = tuple(
+                line.strip()
+                for line in text.splitlines()
+                if line.strip()
+            )
+
+            # Ignore the text representation generated when copying files.
+            if getattr(self, "_last_file_paths", ()) and text_lines == self._last_file_paths:
+                return False
+
             signature = ("text", text.strip())
+
             if signature != self._last_content_signature:
                 self._last_content_signature = signature
                 self.change_count += 1

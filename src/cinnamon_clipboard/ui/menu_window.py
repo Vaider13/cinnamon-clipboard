@@ -436,6 +436,8 @@ class QuickMenuWindow(Gtk.Window):
 
             spacer = Gtk.Box()
             size_group_btn.add_widget(spacer)
+            spacer.set_hexpand(True)
+            size_group_btn.add_widget(spacer)
             grid.attach(spacer, 1, 0, 1, 1)
 
         # 3. TEXT
