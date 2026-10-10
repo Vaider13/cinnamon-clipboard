@@ -184,7 +184,8 @@ class ClipboardManager:
                             "pinned": False
                         }
                         self._add_to_history(item)
-                        return False
+
+                    return False
 
         # -----------------------------------------------------------------
         # PRIORITY 2: IMAGES
@@ -260,7 +261,7 @@ class ClipboardManager:
         app = Gio.Application.get_default()
         if app is not None:
             app.send_notification(None, notification)
-    
+
     def set_files(self, file_paths):
         """Publish available files to the clipboard and notify about missing files."""
         missing_paths = [

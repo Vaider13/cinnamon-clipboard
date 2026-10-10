@@ -175,6 +175,16 @@ class ClipboardApp(Gtk.Application):
 
 
 def main():
+    import argparse
+
+    parser = argparse.ArgumentParser(prog="cinnamon-clipboard")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version="Cinnamon Clipboard 1.0",
+    )
+    parser.parse_args()
+
     app = ClipboardApp()
     return app.run(None)
 

@@ -2,9 +2,12 @@ import gi
 
 import logging
 
+
 logger = logging.getLogger(__name__)
 
 gi.require_version("Gtk", "3.0")
+
+from ..i18n import _
 
 try:
     gi.require_version("XApp", "1.0")
@@ -28,7 +31,7 @@ class TrayIcon:
         self.status_icon = XApp.StatusIcon.new()
         self.status_icon.set_name("cinnamon-clipboard")
         self.status_icon.set_icon_name("edit-paste-symbolic")
-        self.status_icon.set_tooltip_text("Cinnamon Clipboard")
+        self.status_icon.set_tooltip_text(_("Cinnamon Clipboard"))
         self.status_icon.set_visible(True)
 
         self.status_icon.connect("activate", self._on_icon_clicked)

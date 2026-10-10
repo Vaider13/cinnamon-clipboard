@@ -16,7 +16,7 @@ class MainWindow(Gtk.Window):
     """Main clipboard history management window."""
 
     def __init__(self, clipboard_manager, on_quit_app_callback=None):
-        super().__init__(title=_("Clipboard Manager"))
+        super().__init__(title=_("Cinnamon Clipboard"))
 
         self.clipboard_manager = clipboard_manager
         self.on_quit_app_callback = on_quit_app_callback
