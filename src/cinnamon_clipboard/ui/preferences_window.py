@@ -173,7 +173,6 @@ class PreferencesWindow(Gtk.Window):
         main_box.pack_start(bottom_box, False, False, 0)
 
         self.connect("key-press-event", self._on_key_press_event)
-        self.show_all()
 
     def _set_temp(self, key, value):
         self.temp_settings[key] = value
