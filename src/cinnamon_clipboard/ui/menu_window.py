@@ -10,7 +10,6 @@ gi.require_version("GLib", "2.0")
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
 from ..i18n import _
-from .preferences_window import PreferencesWindow
 
 logger = logging.getLogger(__name__)
 
@@ -19,13 +18,10 @@ logger = logging.getLogger(__name__)
 class QuickMenuWindow(Gtk.Window):
     """Native menu-style dropdown window for the Cinnamon tray."""
 
-    def __init__(self, clipboard_manager, on_open_main_window_callback=None, on_quit_app_callback=None):
+    def __init__(self, clipboard_manager):
         super().__init__(type=Gtk.WindowType.TOPLEVEL)
 
         self.clipboard_manager = clipboard_manager
-        self.on_open_main_window_callback = on_open_main_window_callback
-        self.on_quit_app_callback = on_quit_app_callback
-        self.pref_window = None
         self.panel_x = None
         self.panel_y = None
         self.panel_position = None
@@ -96,10 +92,9 @@ class QuickMenuWindow(Gtk.Window):
         spacer = Gtk.Box()
         self.bottom_box.pack_start(spacer, True, True, 0)
 
-        if self.on_open_main_window_callback:
-            btn_app = Gtk.Button(label=_("Open application"))
-            btn_app.connect("clicked", self._on_open_app)
-            self.bottom_box.pack_end(btn_app, False, False, 0)
+        btn_app = Gtk.Button(label=_("Open application"))
+        btn_app.connect("clicked", self._on_open_app)
+        self.bottom_box.pack_end(btn_app, False, False, 0)
 
         self.main_box.pack_start(self.bottom_box, False, False, 0)
 
@@ -122,19 +117,9 @@ class QuickMenuWindow(Gtk.Window):
     def _open_preferences(self, btn):
         self.hide_animated()
 
-        if self.pref_window is None or not self.pref_window.get_visible():
-            app = self.get_application()
-            shortcut_cb = app.update_global_shortcut if app else None
-
-            self.pref_window = PreferencesWindow(
-                self.clipboard_manager.settings,
-                self.clipboard_manager,
-                on_shortcut_changed_callback=shortcut_cb
-            )
-
-            self.pref_window.show_all()
-        else:
-            self.pref_window.present()
+        app = self.get_application()
+        if app:
+            app.open_preferences()
 
     def _filter_list_func(self, row):
         """Filter rows dynamically without rebuilding widgets."""
@@ -584,11 +569,15 @@ class QuickMenuWindow(Gtk.Window):
     def _on_open_app(self, btn):
         self._release_grab()
         self.hide()
-        if self.on_open_main_window_callback:
-            self.on_open_main_window_callback()
+
+        app = self.get_application()
+        if app:
+            app.open_main_window()
 
     def _on_quit_app(self, btn):
-        self.hide_animated()
+        self._release_grab()
+        self.hide()
 
-        if self.on_quit_app_callback:
-            self.on_quit_app_callback()
+        app = self.get_application()
+        if app:
+            app.quit_app()

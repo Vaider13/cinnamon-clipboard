@@ -4,24 +4,18 @@ gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 gi.require_version("GdkPixbuf", "2.0")
 
-from gi.repository import Gtk, Gdk, GdkPixbuf
+from gi.repository import Gtk
 
 from ..i18n import _
-from .preferences_window import PreferencesWindow
-
-from .about_window import AboutWindow
-
 
 class MainWindow(Gtk.Window):
     """Main clipboard history management window."""
 
-    def __init__(self, clipboard_manager, on_quit_app_callback=None):
+    def __init__(self, clipboard_manager):
         super().__init__(title=_("Cinnamon Clipboard"))
 
         self.clipboard_manager = clipboard_manager
-        self.on_quit_app_callback = on_quit_app_callback
         self.current_filter_type = "ALL"  # ALL, text, image, files
-        self.pref_window = None
 
         self.set_default_size(680, 520)
         self.set_position(Gtk.WindowPosition.CENTER)
@@ -115,19 +109,14 @@ class MainWindow(Gtk.Window):
         self.refresh_list()
 
     def _open_about(self, btn):
-        """Open the About window and keep it associated with the main window."""
-        about_window = AboutWindow(parent=self)
-        about_window.show_all()
+        app = self.get_application()
+        if app:
+            app.open_about(parent=self)
 
     def _open_preferences(self, btn):
-        if self.pref_window is None or not self.pref_window.get_visible():
-            self.pref_window = PreferencesWindow(
-                self.clipboard_manager.settings,
-                self.clipboard_manager
-            )
-            self.pref_window.set_transient_for(self)
-        else:
-            self.pref_window.present()
+        app = self.get_application()
+        if app:
+            app.open_preferences(parent=self)
 
     def _on_destroy(self, widget):
         """Remove the subscription when the window is closed."""
@@ -270,6 +259,6 @@ class MainWindow(Gtk.Window):
         self.clipboard_manager.clear_history()
 
     def _on_quit_clicked(self, btn):
-        """Request the main application to close completely."""
-        if self.on_quit_app_callback:
-            self.on_quit_app_callback()
+        app = self.get_application()
+        if app:
+            app.quit_app()

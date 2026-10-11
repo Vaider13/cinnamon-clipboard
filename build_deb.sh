@@ -2,7 +2,7 @@
 set -e
 
 PACKAGE_NAME="cinnamon-clipboard"
-VERSION="1.0.0"
+VERSION="1.0.1"
 ARCH="all"
 BUILD_DIR="build_deb"
 

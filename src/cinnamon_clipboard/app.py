@@ -23,6 +23,8 @@ from gi.repository import GLib, Gtk
 
 from .i18n import _
 
+from .ui.about_window import AboutWindow
+from .ui.preferences_window import PreferencesWindow
 from .core.clipboard import ClipboardManager
 from .ui.main_window import MainWindow
 from .ui.menu_window import QuickMenuWindow
@@ -42,33 +44,78 @@ class ClipboardApp(Gtk.Application):
         self.quick_menu = None
         self.current_shortcut = None
         self._keybinder_initialized = False
+        self.preferences_window = None
+        self.about_window = None
 
     def open_main_window(self):
-        """Open the main window with a single click or bring it to the front."""
+        """Open the main window or bring it to the front."""
         if self.main_window is None:
-            self.main_window = MainWindow(
-                self.clipboard_manager,
-                on_quit_app_callback=self.quit_app,
-            )
+            self.main_window = MainWindow(self.clipboard_manager)
             self.main_window.set_application(self)
-            self.main_window.set_wmclass("cinnamon-clipboard", "CinnamonClipboard")
+            self.main_window.set_wmclass(
+                "cinnamon-clipboard", "CinnamonClipboard"
+            )
             self.main_window.connect("destroy", self._on_main_window_destroyed)
-            self.main_window.show_all()
-            self.main_window.present()
-        else:
-            self.main_window.show_all()
-            self.main_window.present()
+
+        self.main_window.show_all()
+        self.main_window.present()
+
+    def open_about(self, parent=None):
+        """Open the About dialog or bring the existing one to the front."""
+        if self.about_window is None:
+            self.about_window = AboutWindow(parent=parent)
+            self.about_window.set_application(self)
+            self.about_window.connect(
+                "destroy", self._on_about_window_destroyed
+            )
+
+        if parent is not None:
+            self.about_window.set_transient_for(parent)
+
+        self.about_window.show_all()
+        self.about_window.present()
+
+
+    def _on_about_window_destroyed(self, widget):
+        self.about_window = None
+
+    def open_preferences(self, parent=None):
+        """Open the preferences window or bring the existing one to the front."""
+        if self.preferences_window is None:
+            self.preferences_window = PreferencesWindow(
+                self.clipboard_manager.settings,
+                self.clipboard_manager,
+                on_shortcut_changed_callback=self.update_global_shortcut,
+            )
+            self.preferences_window.set_application(self)
+            self.preferences_window.connect(
+                "destroy", self._on_preferences_window_destroyed
+            )
+
+        if parent is not None:
+            self.preferences_window.set_transient_for(parent)
+
+        self.preferences_window.show_all()
+        self.preferences_window.present()
+
+    def _on_preferences_window_destroyed(self, widget):
+        self.preferences_window = None
 
     def _on_main_window_destroyed(self, widget):
         self.main_window = None
 
     def quit_app(self):
         """Fully close the application and release the service."""
-        if self.quick_menu:
-            self.quick_menu.destroy()
-        if self.main_window:
-            self.main_window.destroy()
-        self.release()  # Releases self.hold() to exit the GTK main loop
+        for window in (
+            self.about_window,
+            self.preferences_window,
+            self.quick_menu,
+            self.main_window,
+        ):
+            if window is not None:
+                window.destroy()
+
+        self.release()
         self.quit()
 
     def update_global_shortcut(self, shortcut_str):
@@ -153,8 +200,6 @@ class ClipboardApp(Gtk.Application):
         if self.quick_menu is None:
             self.quick_menu = QuickMenuWindow(
                 clipboard_manager=self.clipboard_manager,
-                on_open_main_window_callback=self.open_main_window,
-                on_quit_app_callback=self.quit_app,
             )
             self.quick_menu.set_application(self)
 

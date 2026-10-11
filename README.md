@@ -44,7 +44,7 @@ Download the latest `.deb` package from the project's [GitHub Releases page](htt
 Install it with:
 
 ```bash
-sudo apt install ./cinnamon-clipboard_1.0.0_all.deb
+sudo apt install ./cinnamon-clipboard_1.0.1_all.deb
 ```
 
 The package installs the application, desktop entry, icon, and Spanish translation.
@@ -127,7 +127,7 @@ Users should not treat the privacy filter as a substitute for the security featu
 
 ## Project status
 
-Cinnamon Clipboard **1.0.0 is the first stable release**.
+Cinnamon Clipboard **1.0.1 is the first stable release**.
 
 The application provides persistent clipboard history for text, images, and files, along with search, pinned items, preferences, and system tray integration.
 
