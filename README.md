@@ -37,6 +37,21 @@ Cinnamon Clipboard is designed primarily for Cinnamon, with support for other GT
 
 ## Installation
 
+## Languages
+
+Cinnamon Clipboard includes translations for the following languages:
+
+- English
+- Spanish
+- Italian
+- Portuguese (Brazil)
+- French
+- German
+- Russian
+- Japanese
+
+The application uses the available system locale to select the appropriate translation. English is used as the fallback when a translation is unavailable.
+
 ### Debian / Ubuntu / Linux Mint
 
 Download the latest `.deb` package from the project's [GitHub Releases page](https://github.com/Vaider13/cinnamon-clipboard/releases).
@@ -44,10 +59,10 @@ Download the latest `.deb` package from the project's [GitHub Releases page](htt
 Install it with:
 
 ```bash
-sudo apt install ./cinnamon-clipboard_1.0.1_all.deb
+sudo apt install ./cinnamon-clipboard_1.0.2_all.deb
 ```
 
-The package installs the application, desktop entry, icon, and Spanish translation.
+The package installs the application, desktop entry, icon, and available translation catalogs.
 
 ### From source
 
@@ -127,7 +142,7 @@ Users should not treat the privacy filter as a substitute for the security featu
 
 ## Project status
 
-Cinnamon Clipboard **1.0.1 is the first stable release**.
+Cinnamon Clipboard **1.0.2 is the first stable release**.
 
 The application provides persistent clipboard history for text, images, and files, along with search, pinned items, preferences, and system tray integration.
 

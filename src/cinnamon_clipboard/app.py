@@ -22,6 +22,7 @@ except Exception:
 from gi.repository import GLib, Gtk
 
 from .i18n import _
+from ._version import __version__
 
 from .ui.about_window import AboutWindow
 from .ui.preferences_window import PreferencesWindow
@@ -226,7 +227,7 @@ def main():
     parser.add_argument(
         "--version",
         action="version",
-        version="Cinnamon Clipboard 1.0",
+        version=f"Cinnamon Clipboard {__version__}",
     )
     parser.parse_args()
 

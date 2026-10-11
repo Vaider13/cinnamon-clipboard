@@ -81,7 +81,7 @@ class MainWindow(Gtk.Window):
 
         bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
 
-        btn_clear_all = Gtk.Button(label=_("Clear all"))
+        btn_clear_all = Gtk.Button(label=_("Clear history"))
         btn_clear_all.set_tooltip_text(_("Delete all unpinned history items"))
         btn_clear_all.connect("clicked", self._on_clear_all)
         bottom_box.pack_start(btn_clear_all, False, False, 0)

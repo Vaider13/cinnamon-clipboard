@@ -1,0 +1,231 @@
+# Traduzioni italiane per Appunti di Cinnamon.
+# Copyright (C) 2026 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Generato automaticamente, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Appunti di Cinnamon 1.0.1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-11 15:13-0300\n"
+"PO-Revision-Date: 2026-10-11 15:13-0300\n"
+"Last-Translator: Traduzione italiana\n"
+"Language-Team: Italiano\n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/cinnamon_clipboard/core/clipboard.py:217
+#, python-format
+msgid "Image (%(width)d×%(height)d px)"
+msgstr "Immagine (%(width)d × %(height)d px)"
+
+#: src/cinnamon_clipboard/core/clipboard.py:282
+msgid ""
+"Only some files were added to the clipboard because some are no longer "
+"available."
+msgstr "Solo alcuni file sono stati aggiunti agli appunti perché gli altri non sono più disponibili."
+
+#: src/cinnamon_clipboard/core/clipboard.py:285
+msgid "The file is no longer available for copying."
+msgstr "Il file non è più disponibile per essere copiato."
+
+#: src/cinnamon_clipboard/core/clipboard.py:288
+#, python-format
+msgid "%(count)d files are no longer available for copying."
+msgstr "%(count)d file non sono più disponibili per essere copiati."
+
+#: src/cinnamon_clipboard/core/clipboard.py:292
+#: src/cinnamon_clipboard/core/clipboard.py:516
+#: src/cinnamon_clipboard/ui/tray.py:34
+#: src/cinnamon_clipboard/ui/main_window.py:15
+msgid "Cinnamon Clipboard"
+msgstr "Appunti di Cinnamon"
+
+#: src/cinnamon_clipboard/core/clipboard.py:350
+#, python-format
+msgid "File: %(name)s"
+msgstr "File: %(name)s"
+
+#: src/cinnamon_clipboard/core/clipboard.py:353
+#, python-format
+msgid "%(name)s and %(count)d more file(s)"
+msgstr "%(name)s e altri %(count)d file"
+
+#: src/cinnamon_clipboard/core/clipboard.py:517
+msgid "The image is no longer available for copying."
+msgstr "L’immagine non è più disponibile per essere copiata."
+
+#: src/cinnamon_clipboard/app.py:189
+msgid "Configuration restored"
+msgstr "Configurazione ripristinata"
+
+#: src/cinnamon_clipboard/app.py:192
+msgid ""
+"The configuration file contained invalid data and was reset to the default "
+"values."
+msgstr "Il file di configurazione conteneva dati non validi ed è stato ripristinato ai valori predefiniti."
+
+#: src/cinnamon_clipboard/ui/about_window.py:31
+msgid "Clipboard manager for Linux desktops."
+msgstr "Gestore degli appunti per desktop Linux."
+
+#: src/cinnamon_clipboard/ui/about_window.py:56
+msgid ""
+"Cinnamon Clipboard is free software: you can redistribute it and/or modify "
+"it under the terms of the GNU General Public License as published by the "
+"Free Software Foundation, either version 3 of the License, or (at your "
+"option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful, but WITHOUT "
+"ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or "
+"FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for "
+"more details."
+msgstr ""
+"Appunti di Cinnamon è software libero: è possibile ridistribuirlo e/o "
+"modificarlo secondo i termini della GNU General Public License, pubblicata "
+"dalla Free Software Foundation, versione 3 o, a scelta, una versione "
+"successiva.\n"
+"\n"
+"Questo programma è distribuito nella speranza che sia utile, ma SENZA "
+"ALCUNA GARANZIA, senza neppure la garanzia implicita di COMMERCIABILITÀ o "
+"IDONEITÀ PER UNO SCOPO PARTICOLARE. Per ulteriori dettagli, consultare la "
+"GNU General Public License."
+
+#: src/cinnamon_clipboard/ui/menu_window.py:54
+msgid "Search.."
+msgstr "Cerca…"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:77
+#: src/cinnamon_clipboard/ui/main_window.py:84
+msgid "Clear history"
+msgstr "Cancella la cronologia"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:78
+#: src/cinnamon_clipboard/ui/main_window.py:85
+msgid "Delete all unpinned history items"
+msgstr "Elimina tutti gli elementi non fissati della cronologia"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:83
+#: src/cinnamon_clipboard/ui/main_window.py:95
+#: src/cinnamon_clipboard/ui/preferences_window.py:15
+msgid "Preferences"
+msgstr "Preferenze"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:89
+#: src/cinnamon_clipboard/ui/main_window.py:100
+msgid "Close Cinnamon Clipboard"
+msgstr "Chiudi Appunti di Cinnamon"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:96
+msgid "Open application"
+msgstr "Apri l’applicazione"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:508
+#: src/cinnamon_clipboard/ui/main_window.py:216
+msgid "Unpin"
+msgstr "Rimuovi dai fissati"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:508
+#: src/cinnamon_clipboard/ui/main_window.py:216
+msgid "Pin to top"
+msgstr "Fissa in cima"
+
+#: src/cinnamon_clipboard/ui/main_window.py:39
+msgid "Search history..."
+msgstr "Cerca nella cronologia…"
+
+#: src/cinnamon_clipboard/ui/main_window.py:47
+msgid "All"
+msgstr "Tutti"
+
+#: src/cinnamon_clipboard/ui/main_window.py:51
+msgid "Text"
+msgstr "Testo"
+
+#: src/cinnamon_clipboard/ui/main_window.py:55
+msgid "Images"
+msgstr "Immagini"
+
+#: src/cinnamon_clipboard/ui/main_window.py:59
+#: src/cinnamon_clipboard/ui/main_window.py:185
+msgid "Files"
+msgstr "File"
+
+#: src/cinnamon_clipboard/ui/main_window.py:90
+msgid "About"
+msgstr "Informazioni"
+
+#: src/cinnamon_clipboard/ui/main_window.py:99
+msgid "Quit"
+msgstr "Esci"
+
+#: src/cinnamon_clipboard/ui/main_window.py:172
+msgid "[Image]"
+msgstr "[Immagine]"
+
+#: src/cinnamon_clipboard/ui/main_window.py:176
+msgid "Image"
+msgstr "Immagine"
+
+#: src/cinnamon_clipboard/ui/main_window.py:222
+msgid "Copy to clipboard"
+msgstr "Copia negli appunti"
+
+#: src/cinnamon_clipboard/ui/main_window.py:228
+msgid "Delete"
+msgstr "Elimina"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:58
+msgid "History and Privacy"
+msgstr "Cronologia e privacy"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:62
+msgid "Save history (Private Mode):"
+msgstr "Salva la cronologia (modalità privata):"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:71
+msgid "History limit:"
+msgstr "Limite della cronologia:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Content Capture"
+msgstr "Acquisizione dei contenuti"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:111
+msgid "Capture images:"
+msgstr "Salva le immagini:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:120
+msgid "Capture files and folders:"
+msgstr "Salva file e cartelle:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "System and Shortcut"
+msgstr "Sistema e scorciatoia"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:141
+msgid "Start with session:"
+msgstr "Avvia all’accesso:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "Tray menu shortcut:"
+msgstr "Scorciatoia del menu dell’area di notifica:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:164
+msgid "Cancel"
+msgstr "Annulla"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:168
+msgid "Save"
+msgstr "Salva"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:183
+msgid "Click to assign"
+msgstr "Fai clic per assegnare"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:188
+msgid "Press a key combination..."
+msgstr "Premi una combinazione di tasti…"

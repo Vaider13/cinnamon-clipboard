@@ -540,16 +540,29 @@ class ClipboardManager:
 
         self._notify_history_changed()
 
+
     def clear_history(self):
-        """Clear the unpinned history in memory, its images, and the database."""
-        items_to_keep = []
+        """Clear unpinned history without deleting images still in use."""
+        items_to_keep = [
+            item for item in self.history
+            if item.get("pinned", False)
+        ]
+
+        pinned_image_paths = {
+            item["data_path"]
+            for item in items_to_keep
+            if item.get("type") == "image" and item.get("data_path")
+        }
+
         for item in self.history:
             if item.get("pinned", False):
-                items_to_keep.append(item)
-            else:
-                if item.get("type") == "image" and "data_path" in item:
-                    if os.path.exists(item["data_path"]):
-                        os.remove(item["data_path"])
+                continue
+
+            if item.get("type") == "image" and item.get("data_path"):
+                path = item["data_path"]
+
+                if path not in pinned_image_paths and os.path.exists(path):
+                    os.remove(path)
 
         self.history = items_to_keep
         self.db.clear_all(keep_pinned=True)

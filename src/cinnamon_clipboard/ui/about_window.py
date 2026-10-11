@@ -12,6 +12,7 @@ gi.require_version("GdkPixbuf", "2.0")
 from gi.repository import Gtk, GdkPixbuf
 
 from ..i18n import _
+from .._version import __version__
 
 
 class AboutWindow(Gtk.AboutDialog):
@@ -26,7 +27,7 @@ class AboutWindow(Gtk.AboutDialog):
         self.set_modal(True)
 
         self.set_program_name("Cinnamon Clipboard")
-        self.set_version("1.0.1")
+        self.set_version(__version__)
         self.set_comments(_("Clipboard manager for Linux desktops."))
         self.set_copyright("© 2026 Vaider13")
         self.set_website("https://github.com/Vaider13/cinnamon-clipboard")

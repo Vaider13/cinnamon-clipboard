@@ -74,7 +74,8 @@ class QuickMenuWindow(Gtk.Window):
 
         self.bottom_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         
-        self.btn_clear = Gtk.Button(label=_("Clear all"))
+        self.btn_clear = Gtk.Button(label=_("Clear history"))
+        self.btn_clear.set_tooltip_text(_("Delete all unpinned history items"))
         self.btn_clear.connect("clicked", self._on_clear_all)
         self.bottom_box.pack_start(self.btn_clear, False, False, 0)
 
