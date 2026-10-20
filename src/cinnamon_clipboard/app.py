@@ -19,10 +19,11 @@ try:
 except Exception:
     KEYBINDER_AVAILABLE = False
 
-from gi.repository import GLib, Gtk
+from gi.repository import GLib, Gtk, Gio
 
 from .i18n import _
 from ._version import __version__
+from .update_checker import check_for_updates
 
 from .ui.about_window import AboutWindow
 from .ui.preferences_window import PreferencesWindow
@@ -175,6 +176,25 @@ class ClipboardApp(Gtk.Application):
         if self.quick_menu:
             GLib.idle_add(self.quick_menu.toggle_window)
 
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+        action = Gio.SimpleAction.new(
+            "view-release",
+            GLib.VariantType.new("s"),
+        )
+        action.connect("activate", self._on_view_release)
+        self.add_action(action)
+
+    def _on_view_release(self, action, parameter):
+        import webbrowser
+
+        url = parameter.get_string()
+        if url.startswith(
+            "https://github.com/Vaider13/cinnamon-clipboard/"
+        ):
+            webbrowser.open(url)
+
     def do_activate(self):
         # Keep the process alive in the background
         self.hold()
@@ -218,6 +238,7 @@ class ClipboardApp(Gtk.Application):
 
         # 4. Start monitoring the clipboard
         self.clipboard_manager.connect_to_changes()
+        check_for_updates(self)
 
 
 def main():
