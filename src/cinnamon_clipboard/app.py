@@ -46,6 +46,7 @@ class ClipboardApp(Gtk.Application):
         self.quick_menu = None
         self.current_shortcut = None
         self._keybinder_initialized = False
+        self._automatic_update_check_started = False
         self.preferences_window = None
         self.about_window = None
 
@@ -239,7 +240,11 @@ class ClipboardApp(Gtk.Application):
 
         # 4. Start monitoring the clipboard
         self.clipboard_manager.connect_to_changes()
-        if self.clipboard_manager.settings.get("check_updates"):
+        if (
+            self.clipboard_manager.settings.get("check_updates")
+            and not self._automatic_update_check_started
+        ):
+            self._automatic_update_check_started = True
             check_for_updates(self)
 
 
