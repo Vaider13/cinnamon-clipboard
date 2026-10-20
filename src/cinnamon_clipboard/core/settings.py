@@ -41,7 +41,7 @@ class SettingsManager:
 
             valid = True
 
-            if "max_history" in data and data["max_history"] not in (10, 25, 50):
+            if "max_history" in data and data["max_history"] not in (10, 25, 50, 75, 100):
                 valid = False
 
             for key in ("autostart", "save_images", "save_files", "enable_history"):

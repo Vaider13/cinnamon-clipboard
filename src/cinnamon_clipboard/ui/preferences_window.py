@@ -76,21 +76,31 @@ class PreferencesWindow(Gtk.Window):
         self.radio_10 = Gtk.RadioButton.new_with_label(None, "10")
         self.radio_25 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "25")
         self.radio_50 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "50")
+        self.radio_75 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "75")
+        self.radio_100 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "100")
 
         if current_limit == 10:
             self.radio_10.set_active(True)
         elif current_limit == 25:
             self.radio_25.set_active(True)
+        elif current_limit == 75:
+            self.radio_75.set_active(True)
+        elif current_limit == 100:
+            self.radio_100.set_active(True)
         else:
             self.radio_50.set_active(True)
 
         self.radio_10.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 10))
         self.radio_25.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 25))
         self.radio_50.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 50))
+        self.radio_75.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 75))
+        self.radio_100.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 100))
 
         box_radio.pack_start(self.radio_10, False, False, 0)
         box_radio.pack_start(self.radio_25, False, False, 0)
         box_radio.pack_start(self.radio_50, False, False, 0)
+        box_radio.pack_start(self.radio_75, False, False, 0)
+        box_radio.pack_start(self.radio_100, False, False, 0)
 
         grid.attach(lbl_limit, 0, row, 1, 1)
         grid.attach(box_radio, 1, row, 1, 1)
