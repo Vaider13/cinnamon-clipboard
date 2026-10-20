@@ -88,6 +88,7 @@ class ClipboardApp(Gtk.Application):
                 self.clipboard_manager.settings,
                 self.clipboard_manager,
                 on_shortcut_changed_callback=self.update_global_shortcut,
+                app=self,
             )
             self.preferences_window.set_application(self)
             self.preferences_window.connect(
@@ -238,7 +239,8 @@ class ClipboardApp(Gtk.Application):
 
         # 4. Start monitoring the clipboard
         self.clipboard_manager.connect_to_changes()
-        check_for_updates(self)
+        if self.clipboard_manager.settings.get("check_updates"):
+            check_for_updates(self)
 
 
 def main():

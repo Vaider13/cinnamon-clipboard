@@ -17,6 +17,7 @@ class SettingsManager:
         "save_files": True,
         "enable_history": True,
         "shortcut": "<Ctrl><Alt>v",
+        "check_updates": True,
     }
 
     def __init__(self):
@@ -44,7 +45,7 @@ class SettingsManager:
             if "max_history" in data and data["max_history"] not in (10, 25, 50, 75, 100):
                 valid = False
 
-            for key in ("autostart", "save_images", "save_files", "enable_history"):
+            for key in ("autostart", "save_images", "save_files", "enable_history", "check_updates"):
                 if key in data and not isinstance(data[key], bool):
                     valid = False
 
