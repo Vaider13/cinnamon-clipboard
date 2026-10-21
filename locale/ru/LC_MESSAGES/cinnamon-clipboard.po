@@ -215,6 +215,14 @@ msgstr "Запускать при входе в систему:"
 msgid "Tray menu shortcut:"
 msgstr "Сочетание клавиш для меню в системном лотке:"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "Фокус на первом элементе при открытии меню:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "Автоматически вставлять при выборе элемента:"
+
 #: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr "Отмена"

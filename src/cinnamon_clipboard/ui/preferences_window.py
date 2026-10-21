@@ -20,7 +20,7 @@ class PreferencesWindow(Gtk.Window):
         self.clipboard_manager = clipboard_manager
         self.on_shortcut_changed_callback = on_shortcut_changed_callback
 
-        self.set_default_size(520, 480)
+        self.set_default_size(520, 560)
         self.set_resizable(False)
         self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
@@ -31,6 +31,8 @@ class PreferencesWindow(Gtk.Window):
             "save_images": self.settings.get("save_images"),
             "save_files": self.settings.get("save_files"),
             "autostart": self.settings.get("autostart"),
+            "focus_first_item": self.settings.get("focus_first_item"),
+            "paste_on_select": self.settings.get("paste_on_select"),
             "shortcut": self.settings.get("shortcut"),
         }
 
@@ -153,6 +155,24 @@ class PreferencesWindow(Gtk.Window):
         self.btn_shortcut.connect("clicked", self._start_capturing_shortcut)
         grid.attach(lbl_shortcut, 0, row, 1, 1)
         grid.attach(self.btn_shortcut, 1, row, 1, 1)
+        row += 1
+
+        lbl_focus_first = Gtk.Label(label=_("Focus first item when opening menu:"), xalign=0)
+        self.switch_focus_first = Gtk.Switch()
+        self.switch_focus_first.set_halign(Gtk.Align.END)
+        self.switch_focus_first.set_active(self.temp_settings["focus_first_item"])
+        self.switch_focus_first.connect("state-set", lambda s, state: self._set_temp("focus_first_item", state))
+        grid.attach(lbl_focus_first, 0, row, 1, 1)
+        grid.attach(self.switch_focus_first, 1, row, 1, 1)
+        row += 1
+
+        lbl_paste_select = Gtk.Label(label=_("Paste automatically when selecting an item:"), xalign=0)
+        self.switch_paste_select = Gtk.Switch()
+        self.switch_paste_select.set_halign(Gtk.Align.END)
+        self.switch_paste_select.set_active(self.temp_settings["paste_on_select"])
+        self.switch_paste_select.connect("state-set", lambda s, state: self._set_temp("paste_on_select", state))
+        grid.attach(lbl_paste_select, 0, row, 1, 1)
+        grid.attach(self.switch_paste_select, 1, row, 1, 1)
         row += 1
 
         # LOWER ACTION BAR (CANCEL / SAVE)

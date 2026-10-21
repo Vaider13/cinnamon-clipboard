@@ -214,6 +214,14 @@ msgstr "Lancer à l’ouverture de session :"
 msgid "Tray menu shortcut:"
 msgstr "Raccourci du menu de la zone de notification :"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "Cibler le premier élément à l’ouverture du menu :"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "Coller automatiquement lors de la sélection d’un élément :"
+
 #: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr "Annuler"

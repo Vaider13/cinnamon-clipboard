@@ -214,6 +214,14 @@ msgstr "Avvia all’accesso:"
 msgid "Tray menu shortcut:"
 msgstr "Scorciatoia del menu dell’area di notifica:"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "Seleziona il primo elemento all’apertura del menu:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "Incolla automaticamente alla selezione di un elemento:"
+
 #: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr "Annulla"

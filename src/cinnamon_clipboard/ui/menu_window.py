@@ -52,6 +52,7 @@ class QuickMenuWindow(Gtk.Window):
         # 1. Static search bar
         self.search_entry = Gtk.SearchEntry()
         self.search_entry.set_placeholder_text(_("Search.."))
+        self.search_entry.connect("changed", self._on_search_changed)
         self.search_entry.connect("search-changed", self._on_search_changed)
         self.main_box.pack_start(self.search_entry, False, False, 0)
 
@@ -136,9 +137,45 @@ class QuickMenuWindow(Gtk.Window):
         data_str = str(item.get("data", "")).lower()
         return query in preview or query in data_str
 
+    def _get_visible_rows(self):
+        """Return all rows currently matching the search filter."""
+        return [
+            row for row in self.list_box.get_children()
+            if self._filter_list_func(row)
+        ]
+
+    def _select_first_visible_row(self, grab_focus=False):
+        """Select the first visible row in the list and optionally focus it."""
+        visible_rows = self._get_visible_rows()
+        if visible_rows:
+            first_row = visible_rows[0]
+            self.list_box.select_row(first_row)
+            if grab_focus:
+                first_row.grab_focus()
+            return first_row
+
+        self.list_box.unselect_all()
+        return None
+
+    def _scroll_to_row(self, row):
+        """Ensure the given row is visible within the scrolled window."""
+        vadj = self.scrolled.get_vadjustment()
+        if not vadj:
+            return
+        alloc = row.get_allocation()
+        if alloc.height <= 0:
+            return
+        page_size = vadj.get_page_size()
+        val = vadj.get_value()
+        if alloc.y < val:
+            vadj.set_value(alloc.y)
+        elif alloc.y + alloc.height > val + page_size:
+            vadj.set_value(alloc.y + alloc.height - page_size)
+
     def _on_search_changed(self, entry):
         """Apply the native filter without touching GTK memory."""
         self.list_box.invalidate_filter()
+        self._select_first_visible_row(grab_focus=False)
 
     def _on_history_updated_external(self):
         """Refresh the window when it is visible and external changes occur."""
@@ -150,6 +187,8 @@ class QuickMenuWindow(Gtk.Window):
         if self.get_visible() and self.get_opacity() > 0.1:
             self.hide_animated()
         else:
+            if self.search_entry.get_text():
+                self.search_entry.set_text("")
             self.refresh_and_show()
 
     def _release_grab(self):
@@ -322,8 +361,14 @@ class QuickMenuWindow(Gtk.Window):
 
         self.present()
 
-        # Position the cursor in the search field if it is open
-        self.search_entry.grab_focus()
+        # Focus and select the first item or the search field according to user preference
+        if self.clipboard_manager.settings.get("focus_first_item"):
+            first_row = self._select_first_visible_row(grab_focus=True)
+            if first_row is None:
+                self.search_entry.grab_focus()
+        else:
+            self._select_first_visible_row(grab_focus=False)
+            self.search_entry.grab_focus()
 
         # Try to grab the Seat. If Cinnamon keeps it, it will be retried via GLib timeout
         GLib.timeout_add(30, self._grab_seat)
@@ -380,6 +425,8 @@ class QuickMenuWindow(Gtk.Window):
         """Create a history row with a clean preview and strict alignment."""
         list_row = Gtk.ListBoxRow()
         list_row.item_data = item
+        list_row.set_can_focus(True)
+        list_row.set_activatable(True)
 
         grid = Gtk.Grid()
         grid.set_column_spacing(8)
@@ -476,6 +523,7 @@ class QuickMenuWindow(Gtk.Window):
                 btn_expand.set_relief(Gtk.ReliefStyle.NONE)
                 btn_expand.set_valign(Gtk.Align.CENTER)
                 btn_expand.set_halign(Gtk.Align.CENTER)
+                btn_expand.set_can_focus(False)
 
                 btn_expand.expanded = False
                 btn_expand.connect(
@@ -499,6 +547,7 @@ class QuickMenuWindow(Gtk.Window):
         btn_pin.set_relief(Gtk.ReliefStyle.NONE)
         btn_pin.set_valign(Gtk.Align.CENTER)
         btn_pin.set_halign(Gtk.Align.CENTER)
+        btn_pin.set_can_focus(False)
 
         if not is_pinned:
             btn_pin.set_opacity(0.30)
@@ -515,6 +564,7 @@ class QuickMenuWindow(Gtk.Window):
         btn_delete.set_relief(Gtk.ReliefStyle.NONE)
         btn_delete.set_valign(Gtk.Align.CENTER)
         btn_delete.set_halign(Gtk.Align.CENTER)
+        btn_delete.set_can_focus(False)
         btn_delete.connect("clicked", lambda b, i_id=item["id"]: self._on_delete_item(i_id))
 
         grid.attach(btn_delete, 3, 0, 1, 1)
@@ -536,7 +586,7 @@ class QuickMenuWindow(Gtk.Window):
         GLib.idle_add(self._update_position)
 
     def _on_row_activated(self, list_box, row):
-        """Action executed when any list row is clicked."""
+        """Action executed when any list row is clicked or activated with Enter."""
         item = getattr(row, "item_data", None)
         if not item:
             logger.warning("[QuickMenu] Row activated but no item_data found.")
@@ -547,16 +597,100 @@ class QuickMenuWindow(Gtk.Window):
         self.hide()  # Hide the window immediately without leaving room for thread interruptions
 
         # 2. Delegate the copy to the backend
-        self.clipboard_manager.copy_item_to_system(item)
+        copied = self.clipboard_manager.copy_item_to_system(item)
+
+        # 3. Paste automatically into the active window if configured
+        if copied and self.clipboard_manager.settings.get("paste_on_select"):
+            self.clipboard_manager.paste_to_active_window(item_type=item.get("type"))
 
     def _on_toggle_pin(self, item_id):
         self.clipboard_manager.toggle_pin_item(item_id)
         self.refresh_and_show()
 
     def _on_key_press(self, widget, event):
-        if event.keyval == Gdk.KEY_Escape:
+        keyval = event.keyval
+
+        if keyval == Gdk.KEY_Escape:
             self.hide_animated()
             return True
+
+        # Activate the selected (or first visible) history item on Enter
+        if keyval in (Gdk.KEY_Return, Gdk.KEY_KP_Enter, Gdk.KEY_ISO_Enter):
+            focused = self.get_focus()
+            if isinstance(focused, Gtk.Button):
+                return False
+
+            selected_row = self.list_box.get_selected_row()
+            if selected_row is None or not self._filter_list_func(selected_row):
+                visible_rows = self._get_visible_rows()
+                selected_row = visible_rows[0] if visible_rows else None
+
+            if selected_row is not None:
+                self._on_row_activated(self.list_box, selected_row)
+                return True
+            return False
+
+        # Navigate visible history rows with Up/Down arrows
+        if keyval in (Gdk.KEY_Down, Gdk.KEY_KP_Down, Gdk.KEY_Up, Gdk.KEY_KP_Up):
+            visible_rows = self._get_visible_rows()
+            if not visible_rows:
+                return True
+
+            current_row = self.list_box.get_selected_row()
+            if current_row not in visible_rows:
+                target_row = visible_rows[0]
+            else:
+                idx = visible_rows.index(current_row)
+                if keyval in (Gdk.KEY_Down, Gdk.KEY_KP_Down):
+                    target_row = visible_rows[min(idx + 1, len(visible_rows) - 1)]
+                else:
+                    target_row = visible_rows[max(idx - 1, 0)]
+
+            self.list_box.select_row(target_row)
+            target_row.grab_focus()
+            self._scroll_to_row(target_row)
+            return True
+
+        # Type-to-search when the search entry does not currently have focus
+        if not self.search_entry.has_focus():
+            disallowed_mods = (
+                Gdk.ModifierType.CONTROL_MASK
+                | Gdk.ModifierType.MOD1_MASK
+                | Gdk.ModifierType.SUPER_MASK
+                | Gdk.ModifierType.MOD4_MASK
+            )
+            if not (event.state & disallowed_mods):
+                if keyval == Gdk.KEY_BackSpace:
+                    current_text = self.search_entry.get_text()
+                    self.search_entry.grab_focus()
+                    if current_text:
+                        self.search_entry.set_text(current_text[:-1])
+                    self.search_entry.select_region(-1, -1)
+                    self.search_entry.set_position(-1)
+                    return True
+
+                if keyval not in (
+                    Gdk.KEY_Tab,
+                    Gdk.KEY_ISO_Left_Tab,
+                    Gdk.KEY_Left,
+                    Gdk.KEY_Right,
+                    Gdk.KEY_Home,
+                    Gdk.KEY_End,
+                    Gdk.KEY_Page_Up,
+                    Gdk.KEY_Page_Down,
+                    Gdk.KEY_Delete,
+                ):
+                    unichar = Gdk.keyval_to_unicode(keyval)
+                    if unichar:
+                        char = chr(unichar)
+                        if char.isprintable():
+                            current_text = self.search_entry.get_text()
+                            self.search_entry.grab_focus()
+                            self.search_entry.set_text(current_text + char)
+                            self.search_entry.select_region(-1, -1)
+                            self.search_entry.set_position(-1)
+                            return True
+
         return False
 
     def _on_delete_item(self, item_id):

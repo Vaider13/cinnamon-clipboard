@@ -16,6 +16,8 @@ class SettingsManager:
         "save_images": True,
         "save_files": True,
         "enable_history": True,
+        "focus_first_item": True,
+        "paste_on_select": True,
         "shortcut": "<Ctrl><Alt>v",
     }
 
@@ -44,7 +46,14 @@ class SettingsManager:
             if "max_history" in data and data["max_history"] not in (10, 25, 50):
                 valid = False
 
-            for key in ("autostart", "save_images", "save_files", "enable_history"):
+            for key in (
+                "autostart",
+                "save_images",
+                "save_files",
+                "enable_history",
+                "focus_first_item",
+                "paste_on_select",
+            ):
                 if key in data and not isinstance(data[key], bool):
                     valid = False
 

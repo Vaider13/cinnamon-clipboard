@@ -210,6 +210,14 @@ msgstr "Start with session:"
 msgid "Tray menu shortcut:"
 msgstr "Tray menu shortcut:"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "Focus first item when opening menu:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "Paste automatically when selecting an item:"
+
 #: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr "Cancel"

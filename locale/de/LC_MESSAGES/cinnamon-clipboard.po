@@ -214,6 +214,14 @@ msgstr "Mit der Sitzung starten:"
 msgid "Tray menu shortcut:"
 msgstr "Tastenkürzel für das Tray-Menü:"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "Erstes Element beim Öffnen des Menüs fokussieren:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "Beim Auswählen eines Elements automatisch einfügen:"
+
 #: src/cinnamon_clipboard/ui/preferences_window.py:164
 msgid "Cancel"
 msgstr "Abbrechen"

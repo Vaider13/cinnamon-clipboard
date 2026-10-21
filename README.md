@@ -17,7 +17,7 @@ Cinnamon Clipboard maintains a persistent history of copied content and provides
 - One-click copy back to the system clipboard.
 - Delete individual items or clear the entire history.
 - System tray integration.
-- Quick menu for fast access to recent clipboard items.
+- Quick menu for fast access to recent clipboard items, with keyboard navigation, type-to-search, first-item focus, and optional automatic paste on selection.
 - Configurable global keyboard shortcut.
 - Desktop notifications when previously copied files or images are unavailable.
 - Privacy filter for clipboard content marked as sensitive by supported password managers.
