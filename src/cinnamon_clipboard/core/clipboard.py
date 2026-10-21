@@ -587,7 +587,7 @@ class ClipboardManager:
             pass
         return False
 
-    def paste_to_active_window(self, item_type=None):
+    def paste_to_active_window(self, item_type=None, exclude_xid=None):
         """Simulate paste shortcut (Ctrl+V or Ctrl+Shift+V for terminals) into the active X11 window."""
         state = {"retries": 0}
 
@@ -616,7 +616,15 @@ class ClipboardManager:
                         keys_held = True
                         break
 
-                if keys_held and state["retries"] < 15:
+                focus_reply = disp.get_input_focus()
+                focus_win = focus_reply.focus
+                focus_xid = getattr(focus_win, "id", None)
+                focus_not_ready = (
+                    focus_xid is None
+                    or (exclude_xid is not None and focus_xid == exclude_xid)
+                )
+
+                if (keys_held or focus_not_ready) and state["retries"] < 20:
                     state["retries"] += 1
                     GLib.timeout_add(25, _try_paste)
                     return False

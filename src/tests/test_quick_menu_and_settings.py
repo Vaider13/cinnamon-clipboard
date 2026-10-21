@@ -100,7 +100,8 @@ class TestSettingsAndQuickMenu(unittest.TestCase):
         handled = menu._on_key_press(menu, event)
         self.assertTrue(handled)
         cm.copy_item_to_system.assert_called_once_with(cm.history[0])
-        cm.paste_to_active_window.assert_called_once_with(item_type="text")
+        cm.paste_to_active_window.assert_called_once()
+        self.assertEqual(cm.paste_to_active_window.call_args.kwargs.get("item_type"), "text")
         menu.destroy()
 
     def test_enter_copies_without_auto_paste_when_disabled(self):

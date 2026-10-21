@@ -9,6 +9,13 @@ gi.require_version("GLib", "2.0")
 
 from gi.repository import Gtk, Gdk, GdkPixbuf, Pango, GLib
 
+try:
+    gi.require_version("GdkX11", "3.0")
+    from gi.repository import GdkX11
+    HAS_GDKX11 = True
+except (ValueError, ImportError):
+    HAS_GDKX11 = False
+
 from ..i18n import _
 
 logger = logging.getLogger(__name__)
@@ -359,16 +366,7 @@ class QuickMenuWindow(Gtk.Window):
         if self.get_window():
             self.get_window().raise_()
 
-        self.present()
-
-        # Focus and select the first item or the search field according to user preference
-        if self.clipboard_manager.settings.get("focus_first_item"):
-            first_row = self._select_first_visible_row(grab_focus=True)
-            if first_row is None:
-                self.search_entry.grab_focus()
-        else:
-            self._select_first_visible_row(grab_focus=False)
-            self.search_entry.grab_focus()
+        self._activate_and_focus_window()
 
         # Try to grab the Seat. If Cinnamon keeps it, it will be retried via GLib timeout
         GLib.timeout_add(30, self._grab_seat)
@@ -390,14 +388,58 @@ class QuickMenuWindow(Gtk.Window):
 
             self._fade_timer_id = GLib.timeout_add(15, _fade_in_step)
 
+    def _get_x11_timestamp(self):
+        """Obtain a current X11 server timestamp so Muffin grants focus."""
+        window = self.get_window()
+        if window is not None and HAS_GDKX11 and isinstance(window, GdkX11.X11Window):
+            try:
+                return GdkX11.x11_get_server_time(window)
+            except Exception:
+                pass
+        return Gdk.CURRENT_TIME
+
+    def _apply_initial_focus(self):
+        """Focus and select the first item or the search field according to user preference."""
+        if self.clipboard_manager.settings.get("focus_first_item"):
+            first_row = self._select_first_visible_row(grab_focus=True)
+            if first_row is None:
+                self.search_entry.grab_focus()
+        else:
+            self._select_first_visible_row(grab_focus=False)
+            self.search_entry.grab_focus()
+
+    def _activate_and_focus_window(self):
+        """Activate the top-level window with a valid X11 timestamp and focus the target widget."""
+        window = self.get_window()
+        timestamp = self._get_x11_timestamp()
+        if window is not None and timestamp != Gdk.CURRENT_TIME:
+            try:
+                window.set_user_time(timestamp)
+            except Exception:
+                pass
+            self.present_with_time(timestamp)
+            window.focus(timestamp)
+        else:
+            self.present()
+
+        self._apply_initial_focus()
+
     def _grab_seat(self):
-        """Attempts to grab the Seat. Returns True to retry if Cinnamon had the click captured."""
+        """Attempts to grab the Seat (pointer and keyboard). Returns True to retry if captured."""
         if not self.get_visible():
             return False
 
         window = self.get_window()
 
         if window and not self._seat_grabbed:
+            timestamp = self._get_x11_timestamp()
+            if timestamp != Gdk.CURRENT_TIME:
+                try:
+                    window.set_user_time(timestamp)
+                except Exception:
+                    pass
+                window.focus(timestamp)
+
             display = Gdk.Display.get_default()
 
             if display:
@@ -406,7 +448,7 @@ class QuickMenuWindow(Gtk.Window):
                 if seat:
                     status = seat.grab(
                         window,
-                        Gdk.SeatCapabilities.POINTER,
+                        Gdk.SeatCapabilities.ALL,
                         True,
                         None,
                         None,
@@ -415,8 +457,13 @@ class QuickMenuWindow(Gtk.Window):
 
                     if status == Gdk.GrabStatus.SUCCESS:
                         self._seat_grabbed = True
+                        if not self.search_entry.has_focus():
+                            self._apply_initial_focus()
                         return False  # Success: stops the retry loop
-                    elif status == Gdk.GrabStatus.ALREADY_GRABBED:
+                    elif status in (
+                        Gdk.GrabStatus.ALREADY_GRABBED,
+                        Gdk.GrabStatus.NOT_VIEWABLE,
+                    ):
                         return True  # Retry automatically on the next 30ms cycle
 
         return False
@@ -593,6 +640,12 @@ class QuickMenuWindow(Gtk.Window):
             return
 
         # 1. Release the X11 grab and hide immediately and synchronously
+        gdk_window = self.get_window()
+        menu_xid = (
+            gdk_window.get_xid()
+            if gdk_window is not None and hasattr(gdk_window, "get_xid")
+            else None
+        )
         self._release_grab()
         self.hide()  # Hide the window immediately without leaving room for thread interruptions
 
@@ -601,7 +654,10 @@ class QuickMenuWindow(Gtk.Window):
 
         # 3. Paste automatically into the active window if configured
         if copied and self.clipboard_manager.settings.get("paste_on_select"):
-            self.clipboard_manager.paste_to_active_window(item_type=item.get("type"))
+            self.clipboard_manager.paste_to_active_window(
+                item_type=item.get("type"),
+                exclude_xid=menu_xid,
+            )
 
     def _on_toggle_pin(self, item_id):
         self.clipboard_manager.toggle_pin_item(item_id)
