@@ -19,6 +19,7 @@ class SettingsManager:
         "focus_first_item": True,
         "paste_on_select": True,
         "shortcut": "<Ctrl><Alt>v",
+        "check_updates": True,
     }
 
     def __init__(self):
@@ -43,7 +44,7 @@ class SettingsManager:
 
             valid = True
 
-            if "max_history" in data and data["max_history"] not in (10, 25, 50):
+            if "max_history" in data and data["max_history"] not in (10, 25, 50, 75, 100):
                 valid = False
 
             for key in (
@@ -53,6 +54,7 @@ class SettingsManager:
                 "enable_history",
                 "focus_first_item",
                 "paste_on_select",
+                "check_updates",
             ):
                 if key in data and not isinstance(data[key], bool):
                     valid = False

@@ -6,12 +6,19 @@ gi.require_version("Gdk", "3.0")
 from gi.repository import Gtk, Gdk
 
 from ..i18n import _
+from ..update_checker import check_for_updates
 
 
 class PreferencesWindow(Gtk.Window):
     """Cinnamon Clipboard configuration/preferences window."""
 
-    def __init__(self, settings_manager, clipboard_manager, on_shortcut_changed_callback=None):
+    def __init__(
+        self,
+        settings_manager,
+        clipboard_manager,
+        on_shortcut_changed_callback=None,
+        app=None,
+    ):
         super().__init__(title=_("Preferences"))
 
         self.set_wmclass("cinnamon-clipboard", "CinnamonClipboard")
@@ -19,8 +26,9 @@ class PreferencesWindow(Gtk.Window):
         self.settings = settings_manager
         self.clipboard_manager = clipboard_manager
         self.on_shortcut_changed_callback = on_shortcut_changed_callback
+        self.app = app
 
-        self.set_default_size(520, 560)
+        self.set_default_size(520, 620)
         self.set_resizable(False)
         self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
@@ -34,6 +42,7 @@ class PreferencesWindow(Gtk.Window):
             "focus_first_item": self.settings.get("focus_first_item"),
             "paste_on_select": self.settings.get("paste_on_select"),
             "shortcut": self.settings.get("shortcut"),
+            "check_updates": self.settings.get("check_updates"),
         }
 
         self.is_capturing_shortcut = False
@@ -78,21 +87,31 @@ class PreferencesWindow(Gtk.Window):
         self.radio_10 = Gtk.RadioButton.new_with_label(None, "10")
         self.radio_25 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "25")
         self.radio_50 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "50")
+        self.radio_75 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "75")
+        self.radio_100 = Gtk.RadioButton.new_with_label_from_widget(self.radio_10, "100")
 
         if current_limit == 10:
             self.radio_10.set_active(True)
         elif current_limit == 25:
             self.radio_25.set_active(True)
+        elif current_limit == 75:
+            self.radio_75.set_active(True)
+        elif current_limit == 100:
+            self.radio_100.set_active(True)
         else:
             self.radio_50.set_active(True)
 
         self.radio_10.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 10))
         self.radio_25.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 25))
         self.radio_50.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 50))
+        self.radio_75.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 75))
+        self.radio_100.connect("toggled", lambda b: b.get_active() and self._set_temp("max_history", 100))
 
         box_radio.pack_start(self.radio_10, False, False, 0)
         box_radio.pack_start(self.radio_25, False, False, 0)
         box_radio.pack_start(self.radio_50, False, False, 0)
+        box_radio.pack_start(self.radio_75, False, False, 0)
+        box_radio.pack_start(self.radio_100, False, False, 0)
 
         grid.attach(lbl_limit, 0, row, 1, 1)
         grid.attach(box_radio, 1, row, 1, 1)
@@ -175,6 +194,50 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.switch_paste_select, 1, row, 1, 1)
         row += 1
 
+        # --- SECTION 4: UPDATES ---
+        sep3 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        sep3.set_margin_top(4)
+        sep3.set_margin_bottom(4)
+        grid.attach(sep3, 0, row, 2, 1)
+        row += 1
+
+        lbl_sec4 = Gtk.Label(xalign=0)
+        lbl_sec4.set_markup(_("Updates"))
+        grid.attach(lbl_sec4, 0, row, 2, 1)
+        row += 1
+
+        lbl_check_updates = Gtk.Label(
+            label=_("Check for updates at startup:"),
+            xalign=0,
+        )
+        self.switch_check_updates = Gtk.Switch()
+        self.switch_check_updates.set_halign(Gtk.Align.END)
+        self.switch_check_updates.set_active(
+            self.temp_settings["check_updates"]
+        )
+        self.switch_check_updates.connect(
+            "state-set",
+            lambda switch, state: self._set_temp("check_updates", state),
+        )
+        grid.attach(lbl_check_updates, 0, row, 1, 1)
+        grid.attach(self.switch_check_updates, 1, row, 1, 1)
+        row += 1
+
+        self.btn_check_updates = Gtk.Button(
+            label=_("Check for updates now")
+        )
+        self.btn_check_updates.connect(
+            "clicked",
+            self._on_check_updates_clicked,
+        )
+
+        self.lbl_update_status = Gtk.Label(xalign=0)
+        self.lbl_update_status.set_line_wrap(True)
+
+        grid.attach(self.lbl_update_status, 0, row, 1, 1)
+        grid.attach(self.btn_check_updates, 1, row, 1, 1)
+        row += 1
+
         # LOWER ACTION BAR (CANCEL / SAVE)
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
 
@@ -197,6 +260,74 @@ class PreferencesWindow(Gtk.Window):
     def _set_temp(self, key, value):
         self.temp_settings[key] = value
         return False
+
+    def _on_check_updates_clicked(self, button):
+        if self.app is None:
+            self.lbl_update_status.set_text(
+                _("Unable to check for updates.")
+            )
+            return
+
+        self.btn_check_updates.set_sensitive(False)
+        self.lbl_update_status.set_text(_("Checking for updates..."))
+
+        check_for_updates(
+            self.app,
+            callback=self._on_manual_update_result,
+            notify_if_new=False,
+        )
+
+    def _on_manual_update_result(self, status, release):
+        self.btn_check_updates.set_sensitive(True)
+
+        if status == "current":
+            self.lbl_update_status.set_text(
+                _("Cinnamon Clipboard is up to date.")
+            )
+            return
+
+        if status == "error":
+            self.lbl_update_status.set_text(
+                _("Unable to check for updates.")
+            )
+            return
+
+        self.lbl_update_status.set_text(
+            _("A new version is available.")
+        )
+
+        dialog = Gtk.MessageDialog(
+            parent=self,
+            flags=Gtk.DialogFlags.MODAL,
+            message_type=Gtk.MessageType.INFO,
+            buttons=Gtk.ButtonsType.NONE,
+            text=_("A new version of Cinnamon Clipboard is available."),
+        )
+
+        dialog.format_secondary_text(
+            _("Version %(version)s is available.")
+            % {"version": release["version"]}
+        )
+
+        changelog = release.get("body", "").strip()
+        if changelog:
+            dialog.get_message_area().pack_start(
+                Gtk.Label(label=changelog, xalign=0),
+                False,
+                False,
+                8,
+            )
+            dialog.get_message_area().show_all()
+
+        dialog.add_button(_("Later"), Gtk.ResponseType.CANCEL)
+        dialog.add_button(_("View release"), Gtk.ResponseType.ACCEPT)
+
+        response = dialog.run()
+        dialog.destroy()
+
+        if response == Gtk.ResponseType.ACCEPT:
+            import webbrowser
+            webbrowser.open(release["url"])
 
     def _format_shortcut_label(self, shortcut_str):
         if not shortcut_str:
