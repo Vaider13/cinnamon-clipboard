@@ -1,0 +1,3 @@
+extend-diff-ignore = "(^|/)\.venv(/|$)"
+extend-diff-ignore = "(^|/)build_deb(/|$)"
+extend-diff-ignore = "(^|/)cinnamon-clipboard_[^/]*\.deb$"

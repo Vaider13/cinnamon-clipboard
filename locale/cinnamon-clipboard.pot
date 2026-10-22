@@ -266,6 +266,10 @@ msgstr ""
 msgid "Updates"
 msgstr ""
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:246
+msgid "Updates are managed by APT."
+msgstr ""
+
 #: src/cinnamon_clipboard/update_checker.py:65
 #: src/cinnamon_clipboard/ui/preferences_window.py:288
 #, python-format

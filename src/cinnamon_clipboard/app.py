@@ -24,6 +24,7 @@ from gi.repository import GLib, Gtk, Gio
 from .i18n import _
 from ._version import __version__
 from .update_checker import check_for_updates
+from .installation import PACKAGE_MANAGED
 
 from .ui.about_window import AboutWindow
 from .ui.preferences_window import PreferencesWindow
@@ -241,7 +242,8 @@ class ClipboardApp(Gtk.Application):
         # 4. Start monitoring the clipboard
         self.clipboard_manager.connect_to_changes()
         if (
-            self.clipboard_manager.settings.get("check_updates")
+            not PACKAGE_MANAGED
+            and self.clipboard_manager.settings.get("check_updates")
             and not self._automatic_update_check_started
         ):
             self._automatic_update_check_started = True

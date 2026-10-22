@@ -72,6 +72,12 @@ echo "[+] Copying application source code..."
 cp -a src/cinnamon_clipboard/. \
     "$BUILD_DIR/usr/lib/python3/dist-packages/cinnamon_clipboard/"
 
+find "$BUILD_DIR/usr/lib/python3/dist-packages/cinnamon_clipboard/" \
+    -type d -name __pycache__ -prune -exec rm -rf {} +
+
+find "$BUILD_DIR/usr/lib/python3/dist-packages/cinnamon_clipboard/" \
+    -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
+
 # 7. Copy the application icon
 if [ -f "data/icons/cinnamon-clipboard.png" ]; then
     echo "[+] Copying application icon..."

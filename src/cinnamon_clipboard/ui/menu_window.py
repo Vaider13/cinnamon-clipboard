@@ -405,7 +405,7 @@ class QuickMenuWindow(Gtk.Window):
             if first_row is None:
                 self.search_entry.grab_focus()
         else:
-            self._select_first_visible_row(grab_focus=False)
+            self.list_box.unselect_all()
             self.search_entry.grab_focus()
 
     def _activate_and_focus_window(self):

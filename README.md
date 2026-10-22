@@ -17,7 +17,9 @@ Cinnamon Clipboard maintains a persistent history of copied content and provides
 - One-click copy back to the system clipboard.
 - Delete individual items or clear the entire history.
 - System tray integration.
-- Quick menu for fast access to recent clipboard items, with keyboard navigation, type-to-search, first-item focus, and optional automatic paste on selection.
+- Quick menu for fast access to recent clipboard items, with keyboard navigation, type-to-search.
+- Configurable initial focus, contributed by @xsak..
+- Optional automatic paste when selecting an item from the menu, contributed by @xsak.
 - Configurable global keyboard shortcut.
 - Desktop notifications when previously copied files or images are unavailable.
 - Privacy filter for clipboard content marked as sensitive by supported password managers.
@@ -26,7 +28,7 @@ Cinnamon Clipboard maintains a persistent history of copied content and provides
 - Automatic checks for new releases published on GitHub.
 - Native desktop notifications when an update is available.
 - Manual update checks and release information from the application preferences.
-- Configurable automatic update checks.
+- Configurable automatic update checks, where supported by the installation method.
 
 ## Requirements
 
@@ -41,32 +43,40 @@ Cinnamon Clipboard is designed primarily for Cinnamon, with support for other GT
 
 ## Installation
 
-## Languages
-
-Cinnamon Clipboard includes translations for the following languages:
-
-- English
-- Spanish
-- Italian
-- Portuguese (Brazil)
-- French
-- German
-- Russian
-- Japanese
-
-The application uses the available system locale to select the appropriate translation. English is used as the fallback when a translation is unavailable.
-
-### Debian / Ubuntu / Linux Mint
+### Debian / Ubuntu / Linux Mint — `.deb` package
 
 Download the latest `.deb` package from the project's [GitHub Releases page](https://github.com/Vaider13/cinnamon-clipboard/releases).
 
 Install it with:
 
 ```bash
-sudo apt install ./cinnamon-clipboard_1.0.3_all.deb
+sudo apt install ./cinnamon-clipboard_1.0.4_all.deb
 ```
 
 The package installs the application, desktop entry, icon, and available translation catalogs.
+
+### Ubuntu PPA
+
+Cinnamon Clipboard is distributed through the Launchpad PPA:
+
+**PPA:** [ppa:vaider17/cinnamon-clipboard](https://launchpad.net/~vaider17/+archive/ubuntu/cinnamon-clipboard)
+
+The PPA targets the following Ubuntu releases:
+
+- Ubuntu 24.04 LTS (Noble Numbat).
+- Ubuntu 26.04 (Resolute Raccoon).
+
+Add the PPA and install the application:
+
+```bash
+sudo add-apt-repository ppa:vaider17/cinnamon-clipboard
+sudo apt update
+sudo apt install cinnamon-clipboard
+```
+
+PPA packages must finish building and be published for your Ubuntu release before they can be installed. If a package is not yet available for your release, use the `.deb` package from GitHub Releases instead.
+
+When installed through APT, application updates are managed by the system package manager rather than the in-app updater.
 
 ### From source
 
@@ -103,6 +113,21 @@ Display the application version:
 ```bash
 PYTHONPATH=src python3 -m cinnamon_clipboard.app --version
 ```
+
+## Languages
+
+Cinnamon Clipboard includes translations for the following languages:
+
+- English
+- Spanish
+- Italian
+- Portuguese (Brazil)
+- French
+- German
+- Russian
+- Japanese
+
+The application uses the available system locale to select the appropriate translation. English is used as the fallback when a translation is unavailable.
 
 ## Building the Debian package
 
@@ -146,11 +171,11 @@ Users should not treat the privacy filter as a substitute for the security featu
 
 ## Project status
 
-Cinnamon Clipboard 1.0.3 is a stable release.
+Cinnamon Clipboard 1.0.4 is a stable release.
 
-The application provides persistent clipboard history for text, images, and files, along with search, pinned items, preferences, system tray integration, and configurable update checks.
+This release introduces improvements to keyboard navigation, configurable initial focus when opening the menu, and an optional setting to paste an item automatically when selected. It also improves update handling for APT-managed installations and includes translations for the APT update-management notice.
 
-This release adds native update notifications, automatic update checks, and manual update controls in the application preferences.
+Thanks to **[@xsak](https://github.com/xsak)** for contributing keyboard navigation improvements.
 
 This is an independently developed open-source project. Feedback, bug reports, and contributions are welcome.
 

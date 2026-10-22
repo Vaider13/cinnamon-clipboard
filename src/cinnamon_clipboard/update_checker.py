@@ -9,6 +9,7 @@ from gi.repository import Gio, GLib, Gtk
 
 from ._version import __version__
 from .i18n import _
+from .installation import PACKAGE_MANAGED
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ def check_for_updates(app, callback=None, notify_if_new=True):
     callback receives (status, release), where status is:
     'update', 'current', or 'error'.
     """
+    if PACKAGE_MANAGED:
+        return
 
     def worker():
         try:

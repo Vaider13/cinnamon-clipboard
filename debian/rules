@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	@:
+
+override_dh_auto_install:
+	install -d debian/cinnamon-clipboard/usr/bin
+	install -d debian/cinnamon-clipboard/usr/lib/python3/dist-packages/cinnamon_clipboard
+	install -d debian/cinnamon-clipboard/usr/share/applications
+	install -d debian/cinnamon-clipboard/usr/share/icons/hicolor/512x512/apps
+
+
+	cp -a src/cinnamon_clipboard/. debian/cinnamon-clipboard/usr/lib/python3/dist-packages/cinnamon_clipboard/
+
+	printf '%s\n' '"""Installation type configuration."""' '' 'PACKAGE_MANAGED = True' > debian/cinnamon-clipboard/usr/lib/python3/dist-packages/cinnamon_clipboard/installation.py
+
+	find debian/cinnamon-clipboard/usr/lib/python3/dist-packages/cinnamon_clipboard/ -type d -name __pycache__ -prune -exec rm -rf {} +
+
+	printf '%s\n' '#!/bin/sh' 'exec python3 -m cinnamon_clipboard.app "$$@"' > debian/cinnamon-clipboard/usr/bin/cinnamon-clipboard
+	chmod 755 debian/cinnamon-clipboard/usr/bin/cinnamon-clipboard
+
+	install -m 644 data/icons/cinnamon-clipboard.png debian/cinnamon-clipboard/usr/share/icons/hicolor/512x512/apps/cinnamon-clipboard.png
+
+	printf '%s\n' \
+		'[Desktop Entry]' \
+		'Type=Application' \
+		'Name=Cinnamon Clipboard' \
+		'Name[es]=Portapapeles de Cinnamon' \
+		'Name[it]=Appunti di Cinnamon' \
+		'Name[fr]=Presse-papiers de Cinnamon' \
+		'Name[de]=Cinnamon-Zwischenablage' \
+		'Name[ru]=Буфер обмена Cinnamon' \
+		'Name[ja]=Cinnamon クリップボード' \
+		'Comment=Clipboard manager for Cinnamon' \
+		'Comment[es]=Gestor de portapapeles para Cinnamon' \
+		'Comment[it]=Gestore degli appunti per Cinnamon' \
+		'Comment[pt_BR]=Gerenciador da área de transferência para Cinnamon' \
+		'Comment[fr]=Gestionnaire de presse-papiers pour Cinnamon' \
+		'Comment[de]=Zwischenablageverwaltung für Cinnamon' \
+		'Comment[ru]=Менеджер буфера обмена Cinnamon' \
+		'Comment[ja]=Cinnamon 用クリップボードマネージャー' \
+		'Exec=cinnamon-clipboard' \
+		'Icon=cinnamon-clipboard' \
+		'StartupWMClass=CinnamonClipboard' \
+		'Terminal=false' \
+		'Categories=Utility;GTK;' \
+		> debian/cinnamon-clipboard/usr/share/applications/cinnamon-clipboard.desktop
+
+	find locale -type f -name 'cinnamon-clipboard.po' | \
+	while IFS= read -r po_file; do \
+		lang="$$(echo "$$po_file" | cut -d/ -f2)"; \
+		dest="debian/cinnamon-clipboard/usr/share/locale/$$lang/LC_MESSAGES"; \
+		install -d "$$dest"; \
+		msgfmt "$$po_file" -o "$$dest/cinnamon-clipboard.mo"; \
+	done

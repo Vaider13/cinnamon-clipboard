@@ -7,6 +7,7 @@ from gi.repository import Gtk, Gdk
 
 from ..i18n import _
 from ..update_checker import check_for_updates
+from ..installation import PACKAGE_MANAGED
 
 
 class PreferencesWindow(Gtk.Window):
@@ -237,6 +238,14 @@ class PreferencesWindow(Gtk.Window):
         grid.attach(self.lbl_update_status, 0, row, 1, 1)
         grid.attach(self.btn_check_updates, 1, row, 1, 1)
         row += 1
+
+        if PACKAGE_MANAGED:
+            self.switch_check_updates.set_sensitive(False)
+            self.btn_check_updates.set_sensitive(False)
+            self.lbl_update_status.set_text(
+                _("Updates are managed by APT.")
+            )
+
 
         # LOWER ACTION BAR (CANCEL / SAVE)
         main_box.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)

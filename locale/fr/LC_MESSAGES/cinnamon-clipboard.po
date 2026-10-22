@@ -279,6 +279,10 @@ msgstr "Désépingler"
 msgid "Updates"
 msgstr "Mises à jour"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:246
+msgid "Updates are managed by APT."
+msgstr "Les mises à jour sont gérées par APT."
+
 #: src/cinnamon_clipboard/update_checker.py:65
 #: src/cinnamon_clipboard/ui/preferences_window.py:288
 #, python-format

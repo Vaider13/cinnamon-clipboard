@@ -276,6 +276,10 @@ msgstr "固定を解除"
 msgid "Updates"
 msgstr "更新"
 
+#: src/cinnamon_clipboard/ui/preferences_window.py:246
+msgid "Updates are managed by APT."
+msgstr "更新は APT によって管理されています。"
+
 #: src/cinnamon_clipboard/update_checker.py:65
 #: src/cinnamon_clipboard/ui/preferences_window.py:288
 #, python-format
