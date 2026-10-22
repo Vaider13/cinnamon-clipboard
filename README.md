@@ -17,12 +17,16 @@ Cinnamon Clipboard maintains a persistent history of copied content and provides
 - One-click copy back to the system clipboard.
 - Delete individual items or clear the entire history.
 - System tray integration.
-- Quick menu for fast access to recent clipboard items.
+- Quick menu for fast access to recent clipboard items, with keyboard navigation, type-to-search, first-item focus, and optional automatic paste on selection.
 - Configurable global keyboard shortcut.
 - Desktop notifications when previously copied files or images are unavailable.
 - Privacy filter for clipboard content marked as sensitive by supported password managers.
 - Native GTK integration with Linux desktop environments.
 - File clipboard interoperability with common Linux file managers using X11 clipboard targets.
+- Automatic checks for new releases published on GitHub.
+- Native desktop notifications when an update is available.
+- Manual update checks and release information from the application preferences.
+- Configurable automatic update checks.
 
 ## Requirements
 
@@ -59,7 +63,7 @@ Download the latest `.deb` package from the project's [GitHub Releases page](htt
 Install it with:
 
 ```bash
-sudo apt install ./cinnamon-clipboard_1.0.2_all.deb
+sudo apt install ./cinnamon-clipboard_1.0.3_all.deb
 ```
 
 The package installs the application, desktop entry, icon, and available translation catalogs.
@@ -142,9 +146,11 @@ Users should not treat the privacy filter as a substitute for the security featu
 
 ## Project status
 
-Cinnamon Clipboard **1.0.2 is the first stable release**.
+Cinnamon Clipboard 1.0.3 is a stable release.
 
-The application provides persistent clipboard history for text, images, and files, along with search, pinned items, preferences, and system tray integration.
+The application provides persistent clipboard history for text, images, and files, along with search, pinned items, preferences, system tray integration, and configurable update checks.
+
+This release adds native update notifications, automatic update checks, and manual update controls in the application preferences.
 
 This is an independently developed open-source project. Feedback, bug reports, and contributions are welcome.
 

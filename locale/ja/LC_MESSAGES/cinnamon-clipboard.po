@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinnamonのクリップボード 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-11 15:13-0300\n"
+"POT-Creation-Date: 2026-10-20 11:14-0300\n"
 "PO-Revision-Date: 2026-10-11 15:13-0300\n"
 "Last-Translator: 日本語翻訳チーム\n"
 "Language-Team: 日本語\n"
@@ -17,25 +17,55 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 
-#: src/cinnamon_clipboard/core/clipboard.py:217
-#, python-format
-msgid "Image (%(width)d×%(height)d px)"
-msgstr "画像（%(width)d × %(height)d px）"
-
-#: src/cinnamon_clipboard/core/clipboard.py:282
-msgid ""
-"Only some files were added to the clipboard because some are no longer "
-"available."
-msgstr "一部のファイルが利用できなくなっているため、利用可能なファイルのみクリップボードに追加しました。"
-
-#: src/cinnamon_clipboard/core/clipboard.py:285
-msgid "The file is no longer available for copying."
-msgstr "このファイルはコピーできなくなりました。"
-
 #: src/cinnamon_clipboard/core/clipboard.py:288
 #, python-format
 msgid "%(count)d files are no longer available for copying."
 msgstr "%(count)d 個のファイルがコピーできなくなりました。"
+
+#: src/cinnamon_clipboard/core/clipboard.py:353
+#, python-format
+msgid "%(name)s and %(count)d more file(s)"
+msgstr "%(name)s、ほか %(count)d 個のファイル"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:276
+msgid "A new version is available."
+msgstr "新しいバージョンがあります。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:284
+msgid "A new version of Cinnamon Clipboard is available."
+msgstr "Cinnamon Clipboard の新しいバージョンがあります。"
+
+#: src/cinnamon_clipboard/ui/main_window.py:90
+msgid "About"
+msgstr "このアプリについて"
+
+#: src/cinnamon_clipboard/ui/main_window.py:47
+msgid "All"
+msgstr "すべて"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:227
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:139
+msgid "Capture files and folders:"
+msgstr "ファイルとフォルダーを記録："
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:130
+msgid "Capture images:"
+msgstr "画像を記録："
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:190
+msgid "Check for updates at startup:"
+msgstr "起動時に更新を確認:"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:207
+msgid "Check for updates now"
+msgstr "今すぐ更新を確認"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:252
+msgid "Checking for updates..."
+msgstr "更新を確認しています..."
 
 #: src/cinnamon_clipboard/core/clipboard.py:292
 #: src/cinnamon_clipboard/core/clipboard.py:516
@@ -43,34 +73,6 @@ msgstr "%(count)d 個のファイルがコピーできなくなりました。"
 #: src/cinnamon_clipboard/ui/main_window.py:15
 msgid "Cinnamon Clipboard"
 msgstr "Cinnamonのクリップボード"
-
-#: src/cinnamon_clipboard/core/clipboard.py:350
-#, python-format
-msgid "File: %(name)s"
-msgstr "ファイル：%(name)s"
-
-#: src/cinnamon_clipboard/core/clipboard.py:353
-#, python-format
-msgid "%(name)s and %(count)d more file(s)"
-msgstr "%(name)s、ほか %(count)d 個のファイル"
-
-#: src/cinnamon_clipboard/core/clipboard.py:517
-msgid "The image is no longer available for copying."
-msgstr "この画像はコピーできなくなりました。"
-
-#: src/cinnamon_clipboard/app.py:189
-msgid "Configuration restored"
-msgstr "設定を復元しました"
-
-#: src/cinnamon_clipboard/app.py:192
-msgid ""
-"The configuration file contained invalid data and was reset to the default "
-"values."
-msgstr "設定ファイルに無効なデータが含まれていたため、設定を初期値に戻しました。"
-
-#: src/cinnamon_clipboard/ui/about_window.py:31
-msgid "Clipboard manager for Linux desktops."
-msgstr "Linux デスクトップ向けクリップボード管理ツール。"
 
 #: src/cinnamon_clipboard/ui/about_window.py:56
 msgid ""
@@ -84,89 +86,47 @@ msgid ""
 "FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for "
 "more details."
 msgstr ""
-"Cinnamonのクリップボードはフリーソフトウェアです。Free Software "
-"Foundation が公開する GNU General Public License（バージョン 3、または "
-"希望によりそれ以降のバージョン）の条件に従って、再配布および改変できます。\n"
+"Cinnamonのクリップボードはフリーソフトウェアです。Free Software Foundation が"
+"公開する GNU General Public License（バージョン 3、または 希望によりそれ以降"
+"のバージョン）の条件に従って、再配布および改変できます。\n"
 "\n"
-"このプログラムは有用であることを願って配布されていますが、商品性や特定目的への "
-"適合性を含め、いかなる保証もありません。詳しくは GNU General Public License "
-"をご覧ください。"
+"このプログラムは有用であることを願って配布されていますが、商品性や特定目的へ"
+"の 適合性を含め、いかなる保証もありません。詳しくは GNU General Public "
+"License をご覧ください。"
 
-#: src/cinnamon_clipboard/ui/menu_window.py:54
-msgid "Search.."
-msgstr "検索…"
+#: src/cinnamon_clipboard/ui/preferences_window.py:265
+msgid "Cinnamon Clipboard is up to date."
+msgstr "Cinnamon Clipboard は最新です。"
+
+#: src/cinnamon_clipboard/update_checker.py:63
+msgid "Cinnamon Clipboard update available"
+msgstr "Cinnamon Clipboard の更新があります。"
 
 #: src/cinnamon_clipboard/ui/menu_window.py:77
 #: src/cinnamon_clipboard/ui/main_window.py:84
 msgid "Clear history"
 msgstr "履歴を消去"
 
-#: src/cinnamon_clipboard/ui/menu_window.py:78
-#: src/cinnamon_clipboard/ui/main_window.py:85
-msgid "Delete all unpinned history items"
-msgstr "固定されていない履歴項目をすべて削除"
+#: src/cinnamon_clipboard/ui/preferences_window.py:314
+msgid "Click to assign"
+msgstr "クリックして割り当て"
 
-#: src/cinnamon_clipboard/ui/menu_window.py:83
-#: src/cinnamon_clipboard/ui/main_window.py:95
-#: src/cinnamon_clipboard/ui/preferences_window.py:15
-msgid "Preferences"
-msgstr "設定"
+#: src/cinnamon_clipboard/ui/about_window.py:31
+msgid "Clipboard manager for Linux desktops."
+msgstr "Linux デスクトップ向けクリップボード管理ツール。"
 
 #: src/cinnamon_clipboard/ui/menu_window.py:89
 #: src/cinnamon_clipboard/ui/main_window.py:100
 msgid "Close Cinnamon Clipboard"
 msgstr "Cinnamonのクリップボードを終了"
 
-#: src/cinnamon_clipboard/ui/menu_window.py:96
-msgid "Open application"
-msgstr "アプリケーションを開く"
+#: src/cinnamon_clipboard/app.py:210
+msgid "Configuration restored"
+msgstr "設定を復元しました"
 
-#: src/cinnamon_clipboard/ui/menu_window.py:508
-#: src/cinnamon_clipboard/ui/main_window.py:216
-msgid "Unpin"
-msgstr "固定を解除"
-
-#: src/cinnamon_clipboard/ui/menu_window.py:508
-#: src/cinnamon_clipboard/ui/main_window.py:216
-msgid "Pin to top"
-msgstr "上部に固定"
-
-#: src/cinnamon_clipboard/ui/main_window.py:39
-msgid "Search history..."
-msgstr "履歴を検索…"
-
-#: src/cinnamon_clipboard/ui/main_window.py:47
-msgid "All"
-msgstr "すべて"
-
-#: src/cinnamon_clipboard/ui/main_window.py:51
-msgid "Text"
-msgstr "テキスト"
-
-#: src/cinnamon_clipboard/ui/main_window.py:55
-msgid "Images"
-msgstr "画像"
-
-#: src/cinnamon_clipboard/ui/main_window.py:59
-#: src/cinnamon_clipboard/ui/main_window.py:185
-msgid "Files"
-msgstr "ファイル"
-
-#: src/cinnamon_clipboard/ui/main_window.py:90
-msgid "About"
-msgstr "このアプリについて"
-
-#: src/cinnamon_clipboard/ui/main_window.py:99
-msgid "Quit"
-msgstr "終了"
-
-#: src/cinnamon_clipboard/ui/main_window.py:172
-msgid "[Image]"
-msgstr "[画像]"
-
-#: src/cinnamon_clipboard/ui/main_window.py:176
-msgid "Image"
-msgstr "画像"
+#: src/cinnamon_clipboard/ui/preferences_window.py:126
+msgid "Content Capture"
+msgstr "コンテンツの記録"
 
 #: src/cinnamon_clipboard/ui/main_window.py:222
 msgid "Copy to clipboard"
@@ -176,54 +136,157 @@ msgstr "クリップボードにコピー"
 msgid "Delete"
 msgstr "削除"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:58
+#: src/cinnamon_clipboard/ui/menu_window.py:78
+#: src/cinnamon_clipboard/ui/main_window.py:85
+msgid "Delete all unpinned history items"
+msgstr "固定されていない履歴項目をすべて削除"
+
+#: src/cinnamon_clipboard/core/clipboard.py:350
+#, python-format
+msgid "File: %(name)s"
+msgstr "ファイル：%(name)s"
+
+#: src/cinnamon_clipboard/ui/main_window.py:59
+#: src/cinnamon_clipboard/ui/main_window.py:185
+msgid "Files"
+msgstr "ファイル"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:67
 msgid "History and Privacy"
 msgstr "履歴とプライバシー"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:62
-msgid "Save history (Private Mode):"
-msgstr "履歴を保存（プライベートモード）："
-
-#: src/cinnamon_clipboard/ui/preferences_window.py:71
+#: src/cinnamon_clipboard/ui/preferences_window.py:80
 msgid "History limit:"
 msgstr "履歴の上限："
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:107
-msgid "Content Capture"
-msgstr "コンテンツの記録"
+#: src/cinnamon_clipboard/ui/main_window.py:176
+msgid "Image"
+msgstr "画像"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:111
-msgid "Capture images:"
-msgstr "画像を記録："
+#: src/cinnamon_clipboard/core/clipboard.py:217
+#, python-format
+msgid "Image (%(width)d×%(height)d px)"
+msgstr "画像（%(width)d × %(height)d px）"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:120
-msgid "Capture files and folders:"
-msgstr "ファイルとフォルダーを記録："
+#: src/cinnamon_clipboard/ui/main_window.py:55
+msgid "Images"
+msgstr "画像"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:137
-msgid "System and Shortcut"
-msgstr "システムとショートカット"
+#: src/cinnamon_clipboard/ui/preferences_window.py:302
+msgid "Later"
+msgstr "後で"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:141
-msgid "Start with session:"
-msgstr "ログイン時に起動："
+#: src/cinnamon_clipboard/core/clipboard.py:282
+msgid ""
+"Only some files were added to the clipboard because some are no longer "
+"available."
+msgstr ""
+"一部のファイルが利用できなくなっているため、利用可能なファイルのみクリップ"
+"ボードに追加しました。"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:150
-msgid "Tray menu shortcut:"
-msgstr "トレイメニューのショートカット："
+#: src/cinnamon_clipboard/ui/menu_window.py:96
+msgid "Open application"
+msgstr "アプリケーションを開く"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:164
-msgid "Cancel"
-msgstr "キャンセル"
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Focus first item when opening menu:"
+msgstr "メニューを開いたときに最初の項目にフォーカス："
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:168
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Paste automatically when selecting an item:"
+msgstr "項目を選択したときに自動的に貼り付け："
+
+#: src/cinnamon_clipboard/ui/menu_window.py:508
+#: src/cinnamon_clipboard/ui/main_window.py:216
+msgid "Pin to top"
+msgstr "上部に固定"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:83
+#: src/cinnamon_clipboard/ui/main_window.py:95
+#: src/cinnamon_clipboard/ui/preferences_window.py:22
+msgid "Preferences"
+msgstr "設定"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:319
+msgid "Press a key combination..."
+msgstr "キーの組み合わせを押してください…"
+
+#: src/cinnamon_clipboard/ui/main_window.py:99
+msgid "Quit"
+msgstr "終了"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:231
 msgid "Save"
 msgstr "保存"
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:183
-msgid "Click to assign"
-msgstr "クリックして割り当て"
+#: src/cinnamon_clipboard/ui/preferences_window.py:71
+msgid "Save history (Private Mode):"
+msgstr "履歴を保存（プライベートモード）："
 
-#: src/cinnamon_clipboard/ui/preferences_window.py:188
-msgid "Press a key combination..."
-msgstr "キーの組み合わせを押してください…"
+#: src/cinnamon_clipboard/ui/main_window.py:39
+msgid "Search history..."
+msgstr "履歴を検索…"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:54
+msgid "Search.."
+msgstr "検索…"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:160
+msgid "Start with session:"
+msgstr "ログイン時に起動："
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:156
+msgid "System and Shortcut"
+msgstr "システムとショートカット"
+
+#: src/cinnamon_clipboard/ui/main_window.py:51
+msgid "Text"
+msgstr "テキスト"
+
+#: src/cinnamon_clipboard/app.py:213
+msgid ""
+"The configuration file contained invalid data and was reset to the default "
+"values."
+msgstr ""
+"設定ファイルに無効なデータが含まれていたため、設定を初期値に戻しました。"
+
+#: src/cinnamon_clipboard/core/clipboard.py:285
+msgid "The file is no longer available for copying."
+msgstr "このファイルはコピーできなくなりました。"
+
+#: src/cinnamon_clipboard/core/clipboard.py:517
+msgid "The image is no longer available for copying."
+msgstr "この画像はコピーできなくなりました。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:169
+msgid "Tray menu shortcut:"
+msgstr "トレイメニューのショートカット："
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:247
+#: src/cinnamon_clipboard/ui/preferences_window.py:271
+msgid "Unable to check for updates."
+msgstr "更新を確認できませんでした。"
+
+#: src/cinnamon_clipboard/ui/menu_window.py:508
+#: src/cinnamon_clipboard/ui/main_window.py:216
+msgid "Unpin"
+msgstr "固定を解除"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:185
+msgid "Updates"
+msgstr "更新"
+
+#: src/cinnamon_clipboard/update_checker.py:65
+#: src/cinnamon_clipboard/ui/preferences_window.py:288
+#, python-format
+msgid "Version %(version)s is available."
+msgstr "バージョン %(version)s が利用可能です。"
+
+#: src/cinnamon_clipboard/update_checker.py:72
+#: src/cinnamon_clipboard/ui/preferences_window.py:303
+msgid "View release"
+msgstr "リリースを見る"
+
+#: src/cinnamon_clipboard/ui/main_window.py:172
+msgid "[Image]"
+msgstr "[画像]"

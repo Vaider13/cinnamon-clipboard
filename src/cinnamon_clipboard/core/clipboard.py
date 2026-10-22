@@ -1,7 +1,11 @@
 import hashlib
+import logging
 import os
 from pathlib import Path
 from urllib.parse import unquote, urlparse
+
+from Xlib import X, XK, display as xlib_display
+from Xlib.ext import xtest
 
 import gi
 
@@ -16,6 +20,30 @@ from ..i18n import _
 from .database import HistoryDatabase
 from .settings import SettingsManager
 from .x11_file_clipboard import X11FileClipboard
+
+logger = logging.getLogger(__name__)
+
+TERMINAL_WM_CLASSES = {
+    "gnome-terminal",
+    "gnome-terminal-server",
+    "xfce4-terminal",
+    "mate-terminal",
+    "konsole",
+    "kitty",
+    "alacritty",
+    "terminator",
+    "tilix",
+    "xterm",
+    "uxterm",
+    "lxterminal",
+    "qterminal",
+    "sakura",
+    "guake",
+    "yakuake",
+    "wezterm",
+    "foot",
+    "ghostty",
+}
 
 
 class ClipboardManager:
@@ -295,20 +323,23 @@ class ClipboardManager:
 
         if not available_paths:
             self.is_self_copying = False
-            return
+            return False
 
         try:
             success = self.x11_file_clipboard.set_files(available_paths)
 
             if success:
                 self.is_self_copying = True
+                return True
             else:
                 print("X11 file clipboard failed to acquire ownership.")
                 self.is_self_copying = False
+                return False
 
         except Exception as e:
             print(f"X11 file clipboard error: {e}")
             self.is_self_copying = False
+            return False
 
     def _read_uri_list(self):
         """Extract local paths from the file selection in text/uri-list or gnome-copied-files format."""
@@ -497,19 +528,22 @@ class ClipboardManager:
     def copy_item_to_system(self, item):
         """Unified method to publish any item type to the system clipboard."""
         if not item:
-            return
+            return False
 
         item_type = item.get("type")
+        copied = False
 
         if item_type == "text":
             self.is_self_copying = True
             self.clipboard.set_text(item["data"], -1)
+            copied = True
 
         elif item_type == "image":
             if "data_path" in item and os.path.exists(item["data_path"]):
                 self.is_self_copying = True
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
                 self.clipboard.set_image(pixbuf)
+                copied = True
             else:
                 self.is_self_copying = False
                 self._show_notification(
@@ -518,11 +552,111 @@ class ClipboardManager:
                 )
 
         elif item_type == "files":
-            self.set_files(item["data"])
+            copied = bool(self.set_files(item["data"]))
 
         # Promote the item to the top of its group
         if "id" in item:
             self.promote_item(item["id"])
+
+        return copied
+
+    def _is_focused_window_terminal(self, disp):
+        """Return True if the currently focused X11 window belongs to a terminal emulator."""
+        try:
+            focus_reply = disp.get_input_focus()
+            win = focus_reply.focus
+            if not win or isinstance(win, int):
+                return False
+
+            visited = set()
+            while win and not isinstance(win, int) and win.id not in visited:
+                visited.add(win.id)
+                try:
+                    wm_class = win.get_wm_class()
+                    if wm_class:
+                        for name in wm_class:
+                            if name and name.lower() in TERMINAL_WM_CLASSES:
+                                return True
+                    tree = win.query_tree()
+                    if not tree or tree.parent == tree.root or tree.parent == win:
+                        break
+                    win = tree.parent
+                except Exception:
+                    break
+        except Exception:
+            pass
+        return False
+
+    def paste_to_active_window(self, item_type=None, exclude_xid=None):
+        """Simulate paste shortcut (Ctrl+V or Ctrl+Shift+V for terminals) into the active X11 window."""
+        state = {"retries": 0}
+
+        def _try_paste():
+            try:
+                disp = self.x11_file_clipboard.display
+                keymap = disp.query_keymap()
+
+                # Wait briefly if the user is still holding Enter or modifier keys
+                watched_keysyms = (
+                    XK.XK_Return,
+                    XK.XK_KP_Enter,
+                    XK.XK_Alt_L,
+                    XK.XK_Alt_R,
+                    XK.XK_Super_L,
+                    XK.XK_Super_R,
+                    XK.XK_Control_L,
+                    XK.XK_Control_R,
+                    XK.XK_Shift_L,
+                    XK.XK_Shift_R,
+                )
+                keys_held = False
+                for keysym in watched_keysyms:
+                    keycode = disp.keysym_to_keycode(keysym)
+                    if keycode and (keymap[keycode >> 3] & (1 << (keycode & 7))):
+                        keys_held = True
+                        break
+
+                focus_reply = disp.get_input_focus()
+                focus_win = focus_reply.focus
+                focus_xid = getattr(focus_win, "id", None)
+                focus_not_ready = (
+                    focus_xid is None
+                    or (exclude_xid is not None and focus_xid == exclude_xid)
+                )
+
+                if (keys_held or focus_not_ready) and state["retries"] < 20:
+                    state["retries"] += 1
+                    GLib.timeout_add(25, _try_paste)
+                    return False
+
+                ctrl_kc = disp.keysym_to_keycode(XK.XK_Control_L)
+                shift_kc = disp.keysym_to_keycode(XK.XK_Shift_L)
+                v_kc = disp.keysym_to_keycode(XK.XK_v)
+
+                if not ctrl_kc or not v_kc:
+                    return False
+
+                use_shift = (
+                    item_type == "text"
+                    and bool(shift_kc)
+                    and self._is_focused_window_terminal(disp)
+                )
+
+                xtest.fake_input(disp, X.KeyPress, ctrl_kc)
+                if use_shift:
+                    xtest.fake_input(disp, X.KeyPress, shift_kc)
+                xtest.fake_input(disp, X.KeyPress, v_kc)
+                xtest.fake_input(disp, X.KeyRelease, v_kc)
+                if use_shift:
+                    xtest.fake_input(disp, X.KeyRelease, shift_kc)
+                xtest.fake_input(disp, X.KeyRelease, ctrl_kc)
+                disp.flush()
+            except Exception as e:
+                logger.error("Failed to simulate paste: %s", e)
+
+            return False
+
+        GLib.timeout_add(80, _try_paste)
 
     def remove_item(self, item_id):
         """Remove an item from the in-memory history and from SQLite."""
