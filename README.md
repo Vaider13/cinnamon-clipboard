@@ -78,6 +78,20 @@ PPA packages must finish building and be published for your Ubuntu release befor
 
 When installed through APT, application updates are managed by the system package manager rather than the in-app updater.
 
+### Fedora (RPM)
+
+Download the RPM package for Fedora:
+
+[**Download cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm**](cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm)
+
+Install it from the terminal:
+
+```bash
+sudo dnf install ./cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm
+```
+
+**Note:** The RPM package has been tested on Fedora 45 Beta with Cinnamon. Testing has been limited, and compatibility with other Fedora versions or desktop environments is not guaranteed. Bugs may occur.
+
 ### From source
 
 Clone the repository:
