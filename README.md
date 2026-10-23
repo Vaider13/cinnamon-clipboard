@@ -82,7 +82,7 @@ When installed through APT, application updates are managed by the system packag
 
 Download the RPM package for Fedora:
 
-[**Download cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm**](cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm)
+Download the latest `.rpm` package from the project's [GitHub Releases page](https://github.com/Vaider13/cinnamon-clipboard/releases).
 
 Install it from the terminal:
 
