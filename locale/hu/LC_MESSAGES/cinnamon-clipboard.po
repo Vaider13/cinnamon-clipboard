@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: Cinnamon Clipboard\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2026-10-20 11:14-0300\n"
-"PO-Revision-Date: 2026-10-23 08:54+0200\n"
+"PO-Revision-Date: 2026-10-23 18:17+0200\n"
 "Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
 "Language-Team: Magyar\n"
 "Language: hu\n"
@@ -73,7 +73,7 @@ msgstr "Frissítések keresése..."
 #: src/cinnamon_clipboard/ui/tray.py:34
 #: src/cinnamon_clipboard/ui/main_window.py:15
 msgid "Cinnamon Clipboard"
-msgstr "Kilépés a Cinnamon Clipboard-ból"
+msgstr "Cinnamon Clipboard vágólap kezelő"
 
 #: src/cinnamon_clipboard/ui/about_window.py:56
 msgid ""
