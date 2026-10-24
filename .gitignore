@@ -5,3 +5,4 @@ __pycache__/
 .vscode/
 build_deb/
 *.deb
+*.rpm

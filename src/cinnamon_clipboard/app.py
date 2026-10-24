@@ -41,7 +41,7 @@ class ClipboardApp(Gtk.Application):
         super().__init__(
             application_id="com.github.vaider13.CinnamonClipboard"
         )
-        self.clipboard_manager = ClipboardManager()
+        self.clipboard_manager = None
         self.tray_icon = None
         self.main_window = None
         self.quick_menu = None
@@ -123,6 +123,24 @@ class ClipboardApp(Gtk.Application):
         self.release()
         self.quit()
 
+    def restart_app(self):
+        """Restart the current process using the same Python environment."""
+        import os
+        import sys
+
+        command = [
+            sys.executable,
+            "-m",
+            "cinnamon_clipboard.app",
+            *sys.argv[1:],
+        ]
+
+        try:
+            os.execv(sys.executable, command)
+        except OSError:
+            logger.exception("Failed to restart Cinnamon Clipboard")
+            self.quit_app()
+
     def update_global_shortcut(self, shortcut_str):
         """Update the registered global shortcut when the user changes it in preferences."""
         self._setup_global_shortcut(shortcut_str)
@@ -202,6 +220,31 @@ class ClipboardApp(Gtk.Application):
         # Keep the process alive in the background
         self.hold()
 
+        # Initialize the clipboard manager after the application is active.
+        if self.clipboard_manager is None:
+            try:
+                self.clipboard_manager = ClipboardManager()
+            except RuntimeError:
+                logger.exception("Failed to initialize the clipboard manager")
+
+                notification = Gio.Notification.new(
+                    _("Temporary history could not be started")
+                )
+                notification.set_body(
+                    _(
+                        "The saved clipboard history could not be deleted. "
+                        "Check file permissions and restart the application."
+                    )
+                )
+                notification.set_icon(
+                    Gio.ThemedIcon.new("cinnamon-clipboard")
+                )
+                self.send_notification(None, notification)
+
+                self.release()
+                self.quit()
+                return
+
         # Show a warning if the configuration was restored automatically
         if self.clipboard_manager.settings.config_was_reset:
             dialog = Gtk.MessageDialog(
@@ -239,8 +282,10 @@ class ClipboardApp(Gtk.Application):
         shortcut = self.clipboard_manager.settings.get("shortcut")
         self._setup_global_shortcut(shortcut)
 
-        # 4. Start monitoring the clipboard
-        self.clipboard_manager.connect_to_changes()
+        # 4. Start monitoring the clipboard only once
+        if not getattr(self, "_clipboard_monitoring_started", False):
+            self.clipboard_manager.connect_to_changes()
+            self._clipboard_monitoring_started = True
         if (
             not PACKAGE_MANAGED
             and self.clipboard_manager.settings.get("check_updates")

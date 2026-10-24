@@ -1,13 +1,14 @@
 import hashlib
 import logging
+import gi
+import shutil
 import os
+
 from pathlib import Path
 from urllib.parse import unquote, urlparse
 
 from Xlib import X, XK, display as xlib_display
 from Xlib.ext import xtest
-
-import gi
 
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
@@ -49,8 +50,68 @@ TERMINAL_WM_CLASSES = {
 class ClipboardManager:
     """Manages clipboard communication in GTK3 with deduplication, permanent storage, and SQLite integration."""
 
+    @staticmethod
+    def _clean_persistent_storage():
+        """Remove persistent history files before starting in temporary mode."""
+        data_dir = (
+            Path.home()
+            / ".local"
+            / "share"
+            / "cinnamon-clipboard"
+        )
+        db_path = data_dir / "history.db"
+        media_dir = data_dir / "media"
+
+        # Validate the application data directory.
+        if data_dir.is_symlink():
+            raise OSError(
+                f"Refusing to use unexpected symbolic link: {data_dir}"
+            )
+
+        if data_dir.exists() and not data_dir.is_dir():
+            raise OSError(
+                f"Expected a data directory, found another file: {data_dir}"
+            )
+
+        db_files = (
+            db_path,
+            Path(str(db_path) + "-wal"),
+            Path(str(db_path) + "-shm"),
+            Path(str(db_path) + "-journal"),
+        )
+
+        # Validate database files before deleting anything.
+        for path in db_files:
+            if path.is_symlink():
+                raise OSError(
+                    f"Refusing to delete unexpected symbolic link: {path}"
+                )
+
+        # Validate the image directory before deleting anything.
+        if media_dir.is_symlink():
+            raise OSError(
+                f"Refusing to delete unexpected symbolic link: {media_dir}"
+            )
+
+        if media_dir.exists() and not media_dir.is_dir():
+            raise OSError(
+                f"Expected an image directory, found another file: {media_dir}"
+            )
+
+        # Delete SQLite database files and possible journal sidecars.
+        for path in db_files:
+            if path.exists():
+                path.unlink()
+
+        # Remove the application's image-storage directory.
+        if media_dir.exists():
+            shutil.rmtree(media_dir)
+
     def __init__(self):
         self.settings = SettingsManager()
+        self.history_mode = self.settings.get("history_mode") or "persistent"
+
+        # Initialize the system clipboard.
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
         self.x11_file_clipboard = X11FileClipboard()
         self.change_count = 0
@@ -58,18 +119,42 @@ class ClipboardManager:
 
         self._debounce_timer_id = None
         self._last_content_signature = None
-        self.is_self_copying = False  # Flag to avoid reinserting items copied from the history
+        self.is_self_copying = False
 
-        # Subscribers to notify interface changes in real time
+        # Subscribers to notify interface changes in real time.
         self._on_history_changed_callbacks = []
 
-        # Permanent data directory for images (alongside the database)
-        self.data_media_dir = Path.home() / ".local" / "share" / "cinnamon-clipboard" / "media"
-        self.data_media_dir.mkdir(parents=True, exist_ok=True)
+        # Temporary item IDs are negative to avoid collisions with SQLite IDs.
+        self._next_temp_id = -1
 
-        # SQLite database
-        self.db = HistoryDatabase()
-        self.history = self._load_history_from_db()
+        # Persistent storage is initialized only in persistent mode.
+        self.data_media_dir = None
+        self.db = None
+
+        if self.history_mode == "persistent":
+            self.data_media_dir = (
+                Path.home()
+                / ".local"
+                / "share"
+                / "cinnamon-clipboard"
+                / "media"
+            )
+            self.data_media_dir.mkdir(parents=True, exist_ok=True)
+            self.db = HistoryDatabase()
+            self.history = self._load_history_from_db()
+        else:
+            try:
+                self._clean_persistent_storage()
+            except OSError as error:
+                logger.exception(
+                    "Failed to clean persistent history in temporary mode"
+                )
+                raise RuntimeError(
+                    "Cannot start temporary mode because persistent "
+                    "history files could not be removed."
+                ) from error
+
+            self.history = []
 
     def add_history_listener(self, callback):
         """Register a function to be notified when the history changes."""
@@ -151,24 +236,23 @@ class ClipboardManager:
         debounce_ms = 250 if clipboard.wait_is_image_available() else 150
         self._debounce_timer_id = GLib.timeout_add(debounce_ms, self._process_clipboard_content)
 
+
     def _process_clipboard_content(self):
         self._debounce_timer_id = None
 
-        # If the change was triggered by ourselves from the history, do not reinsert it
+        # If the change was triggered by ourselves from the history, do not reinsert it.
         if self.is_self_copying:
             self.is_self_copying = False
             return False
 
-        # CHECK: PRIVATE MODE / HISTORY SAVING DISABLED
+        # History saving disabled.
         if not self.settings.get("enable_history"):
             return False
 
         if self._is_clipboard_secret():
             return False
 
-        # -----------------------------------------------------------------
-        # DETECT WHETHER THE CLIPBOARD CONTAINS FILES OR FOLDERS
-        # -----------------------------------------------------------------
+        # Detect files and folders.
         res = self.clipboard.wait_for_targets()
         if res:
             targets = res[1] if isinstance(res, tuple) and len(res) == 2 else res
@@ -187,11 +271,8 @@ class ClipboardManager:
                 or "x-special/mate-copied-files" in target_names
             )
 
-            # -----------------------------------------------------------------
-            # FILES AND FOLDERS
-            # -----------------------------------------------------------------
+            # Files and folders.
             if is_file_clipboard:
-                # If file capture is disabled, ignore this content completely to avoid saving it as text.
                 if not self.settings.get("save_files"):
                     return False
 
@@ -209,15 +290,13 @@ class ClipboardManager:
                             "type": "files",
                             "data": file_paths,
                             "preview": preview_text,
-                            "pinned": False
+                            "pinned": False,
                         }
                         self._add_to_history(item)
 
                     return False
 
-        # -----------------------------------------------------------------
-        # PRIORITY 2: IMAGES
-        # -----------------------------------------------------------------
+        # Images.
         if self.settings.get("save_images"):
             pixbuf = self.clipboard.wait_for_image()
             if pixbuf:
@@ -233,24 +312,34 @@ class ClipboardManager:
 
                     scaled_pixbuf = self._scale_pixbuf(pixbuf, target_size=140)
 
-                    saved_file_path = self.data_media_dir / f"{w}x{h}_{img_hash}.png"
-                    if not saved_file_path.exists():
-                        pixbuf.savev(str(saved_file_path), "png", [], [])
-
                     item = {
                         "type": "image",
-                        "data": str(saved_file_path),
-                        "data_path": str(saved_file_path),
+                        "preview": _("Image (%(width)d×%(height)d px)") % {
+                            "width": w,
+                            "height": h,
+                        },
                         "pixbuf": scaled_pixbuf,
-                        "preview": _("Image (%(width)d×%(height)d px)") % {"width": w, "height": h},
-                        "pinned": False
+                        "pinned": False,
                     }
+
+                    if self.history_mode == "persistent":
+                        saved_file_path = (
+                            self.data_media_dir / f"{w}x{h}_{img_hash}.png"
+                        )
+                        if not saved_file_path.exists():
+                            pixbuf.savev(str(saved_file_path), "png", [], [])
+
+                        item["data"] = str(saved_file_path)
+                        item["data_path"] = str(saved_file_path)
+                    else:
+                        # Keep the original image in RAM; do not write it to disk.
+                        item["data"] = f"memory:{w}x{h}:{img_hash}"
+                        item["pixbuf_original"] = pixbuf
+
                     self._add_to_history(item)
                     return False
 
-        # -----------------------------------------------------------------
-        # PRIORITY 3: PLAIN TEXT
-        # -----------------------------------------------------------------
+        # Plain text.
         text = self.clipboard.wait_for_text()
         if text and text.strip():
             text_lines = tuple(
@@ -273,7 +362,7 @@ class ClipboardManager:
                     "type": "text",
                     "data": text,
                     "preview": text[:60].replace("\n", " ") + ("..." if len(text) > 60 else ""),
-                    "pinned": False
+                    "pinned": False,
                 }
                 self._add_to_history(item)
                 return False
@@ -400,15 +489,20 @@ class ClipboardManager:
 
         return pixbuf.scale_simple(new_w, new_h, GdkPixbuf.InterpType.BILINEAR)
 
+    
     def _add_to_history(self, item):
-        """Save to the database, add to in-memory history, and notify open windows."""
-        db_id = self.db.add_item(
-            item_type=item["type"],
-            data=item["data"],
-            preview=item["preview"],
-            data_path=item.get("data_path")
-        )
-        item["id"] = db_id
+        """Add an item to history and persist it only in persistent mode."""
+        if self.db is not None:
+            db_id = self.db.add_item(
+                item_type=item["type"],
+                data=item["data"],
+                preview=item["preview"],
+                data_path=item.get("data_path"),
+            )
+            item["id"] = db_id
+        else:
+            item["id"] = self._next_temp_id
+            self._next_temp_id -= 1
 
         # Insert after the last pinned item.
         insert_idx = 0
@@ -417,42 +511,43 @@ class ClipboardManager:
                 insert_idx = idx + 1
             else:
                 break
-
         self.history.insert(insert_idx, item)
 
         self.max_history = self.settings.get("max_history")
-
-        # The limit applies only to unpinned items.
         normal_items = [
-            history_item for history_item in self.history
+            history_item
+            for history_item in self.history
             if not history_item.get("pinned", False)
         ]
 
         if len(normal_items) > self.max_history:
-            # Remove the oldest unpinned item.
             for i in range(len(self.history) - 1, -1, -1):
                 if not self.history[i].get("pinned", False):
                     removed_item = self.history.pop(i)
-                    self.db.delete_item(removed_item["id"])
 
-                    if removed_item.get("type") == "image" and "data_path" in removed_item:
+                    if self.db is not None:
+                        self.db.delete_item(removed_item["id"])
+
+                    if (
+                        self.db is not None
+                        and removed_item.get("type") == "image"
+                        and removed_item.get("data_path")
+                    ):
                         path = removed_item["data_path"]
-
                         if not any(
                             history_item.get("data_path") == path
                             for history_item in self.history
                         ):
                             if os.path.exists(path):
                                 os.remove(path)
-
                     break
 
         self._notify_history_changed()
 
+    
     def apply_max_history(self, max_history):
-        """Immediately apply the new limit by removing extra normal items."""
+        """Apply the history limit and persist removals when applicable."""
         self.max_history = max_history
-
         normal_items = [
             item for item in self.history
             if not item.get("pinned", False)
@@ -460,26 +555,30 @@ class ClipboardManager:
 
         while len(normal_items) > self.max_history:
             removed_item = normal_items.pop()
-
             self.history.remove(removed_item)
-            self.db.delete_item(removed_item["id"])
 
-            if removed_item.get("type") == "image" and "data_path" in removed_item:
+            if self.db is not None:
+                self.db.delete_item(removed_item["id"])
+
+            if (
+                self.db is not None
+                and removed_item.get("type") == "image"
+                and removed_item.get("data_path")
+            ):
                 path = removed_item["data_path"]
-
                 if not any(
-                    history_item.get("data_path") == path
-                    for history_item in self.history
+                    item.get("data_path") == path
+                    for item in self.history
                 ):
                     if os.path.exists(path):
                         os.remove(path)
 
         self._notify_history_changed()
 
+    
     def promote_item(self, item_id):
-        """Move an item to the beginning of its respective group and save the new order."""
+        """Move an item to the beginning of its respective group."""
         target_item = None
-
         for item in self.history:
             if item["id"] == item_id:
                 target_item = item
@@ -488,45 +587,43 @@ class ClipboardManager:
         if not target_item:
             return
 
-        # Remove the item from its current position.
         self.history.remove(target_item)
 
         if target_item.get("pinned", False):
-            # If it is pinned: move it to the top.
             self.history.insert(0, target_item)
         else:
-            # If it is unpinned: move it just below all pinned items.
             insert_idx = 0
-
             for idx, h_item in enumerate(self.history):
                 if h_item.get("pinned", False):
                     insert_idx = idx + 1
                 else:
                     break
-
             self.history.insert(insert_idx, target_item)
 
-        # Persist the complete history order.
-        self.db.save_order(self.history)
+        if self.db is not None:
+            self.db.save_order(self.history)
 
         self._notify_history_changed()
 
+
     def toggle_pin_item(self, item_id):
-        """Toggle the pinned state of an item and persist the new order."""
+        """Toggle the pinned state of an item and persist it when applicable."""
         for item in self.history:
             if item["id"] == item_id:
                 new_state = not item.get("pinned", False)
                 item["pinned"] = new_state
-                self.db.toggle_pin(item_id, new_state)
+
+                if self.db is not None:
+                    self.db.toggle_pin(item_id, new_state)
                 break
         else:
             return
 
-        # Reorder the item according to its new pinned state.
         self.promote_item(item_id)
 
+   
     def copy_item_to_system(self, item):
-        """Unified method to publish any item type to the system clipboard."""
+        """Publish any history item to the system clipboard."""
         if not item:
             return False
 
@@ -539,26 +636,42 @@ class ClipboardManager:
             copied = True
 
         elif item_type == "image":
-            if "data_path" in item and os.path.exists(item["data_path"]):
-                self.is_self_copying = True
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
-                self.clipboard.set_image(pixbuf)
-                copied = True
-            else:
+            try:
+                if item.get("pixbuf_original") is not None:
+                    # Temporary mode: copy the original image from RAM.
+                    pixbuf = item["pixbuf_original"]
+                elif item.get("data_path") and os.path.exists(item["data_path"]):
+                    # Persistent mode: load the image from disk.
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file(item["data_path"])
+                else:
+                    pixbuf = None
+
+                if pixbuf is not None:
+                    self.is_self_copying = True
+                    self.clipboard.set_image(pixbuf)
+                    copied = True
+                else:
+                    self.is_self_copying = False
+                    self._show_notification(
+                        _("Cinnamon Clipboard"),
+                        _("The image is no longer available for copying."),
+                    )
+            except Exception:
                 self.is_self_copying = False
+                logging.exception("Could not copy an image from clipboard history")
                 self._show_notification(
                     _("Cinnamon Clipboard"),
-                    _("The image is no longer available for copying."),
+                    _("The image could not be copied."),
                 )
 
         elif item_type == "files":
             copied = bool(self.set_files(item["data"]))
 
-        # Promote the item to the top of its group
-        if "id" in item:
+        if copied and "id" in item:
             self.promote_item(item["id"])
 
         return copied
+
 
     def _is_focused_window_terminal(self, disp):
         """Return True if the currently focused X11 window belongs to a terminal emulator."""
@@ -658,17 +771,26 @@ class ClipboardManager:
 
         GLib.timeout_add(80, _try_paste)
 
+    
     def remove_item(self, item_id):
-        """Remove an item from the in-memory history and from SQLite."""
-        removed_items = [i for i in self.history if i["id"] == item_id]
-        self.history = [i for i in self.history if i["id"] != item_id]
+        """Remove an item from history and from SQLite when applicable."""
+        removed_items = [item for item in self.history if item["id"] == item_id]
+        self.history = [item for item in self.history if item["id"] != item_id]
 
-        self.db.delete_item(item_id)
+        if self.db is not None:
+            self.db.delete_item(item_id)
 
         for item in removed_items:
-            if item.get("type") == "image" and "data_path" in item:
+            if (
+                self.db is not None
+                and item.get("type") == "image"
+                and item.get("data_path")
+            ):
                 path = item["data_path"]
-                if not any(i.get("data_path") == path for i in self.history):
+                if not any(
+                    history_item.get("data_path") == path
+                    for history_item in self.history
+                ):
                     if os.path.exists(path):
                         os.remove(path)
 
@@ -692,13 +814,20 @@ class ClipboardManager:
             if item.get("pinned", False):
                 continue
 
-            if item.get("type") == "image" and item.get("data_path"):
+            if (
+                self.db is not None
+                and item.get("type") == "image"
+                and item.get("data_path")
+            ):
                 path = item["data_path"]
-
                 if path not in pinned_image_paths and os.path.exists(path):
                     os.remove(path)
 
         self.history = items_to_keep
-        self.db.clear_all(keep_pinned=True)
+
+        if self.db is not None:
+            self.db.clear_all(keep_pinned=True)
+
         self._last_content_signature = None
         self._notify_history_changed()
+
