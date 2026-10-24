@@ -33,7 +33,7 @@ class PreferencesWindow(Gtk.Window):
         self.app = app
 
         self.set_default_size(520, 620)
-        self.set_resizable(False)
+        self.set_resizable(True)
         self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
         # Load temporary values (to apply only if the user clicks "Save")
@@ -65,7 +65,16 @@ class PreferencesWindow(Gtk.Window):
         grid.set_column_spacing(24)
         grid.set_row_spacing(14)
         grid.set_hexpand(True)
-        main_box.pack_start(grid, True, True, 0)
+
+        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window.set_policy(
+            Gtk.PolicyType.NEVER,
+            Gtk.PolicyType.AUTOMATIC,
+        )
+        scrolled_window.set_hexpand(True)
+        scrolled_window.set_vexpand(True)
+        scrolled_window.add(grid)
+        main_box.pack_start(scrolled_window, True, True, 0)
 
         row = 0
 

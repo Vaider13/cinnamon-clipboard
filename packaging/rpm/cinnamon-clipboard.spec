@@ -1,6 +1,5 @@
-
 Name:           cinnamon-clipboard
-Version:        1.0.4
+Version:        1.1.0
 Release:        1%{?dist}
 Summary:        Clipboard manager for Cinnamon and Linux desktops
 
@@ -37,22 +36,22 @@ done
 %install
 rm -rf %{buildroot}
 
-install -d %{buildroot}%{python3_sitelib}/cinnamon_clipboard
-cp -a src/cinnamon_clipboard/. \
-    %{buildroot}%{python3_sitelib}/cinnamon_clipboard/
+install -d %{buildroot}/usr/lib/python3/dist-packages/cinnamon_clipboard
+cp -a src/cinnamon_clipboard/. 
+    %{buildroot}/usr/lib/python3/dist-packages/cinnamon_clipboard/
 
-find %{buildroot}%{python3_sitelib}/cinnamon_clipboard \
+find %{buildroot}/usr/lib/python3/dist-packages/cinnamon_clipboard 
     -type d -name __pycache__ -prune -exec rm -rf {} +
-find %{buildroot}%{python3_sitelib}/cinnamon_clipboard \
+find %{buildroot}/usr/lib/python3/dist-packages/cinnamon_clipboard 
     -type f \( -name '*.pyc' -o -name '*.pyo' \) -delete
 
-install -D -m 0755 /dev/stdin \
+install -D -m 0755 /dev/stdin 
     %{buildroot}%{_bindir}/cinnamon-clipboard <<'EOF'
 #!/bin/sh
 exec python3 -m cinnamon_clipboard.app "$@"
 EOF
 
-install -D -m 0644 data/icons/cinnamon-clipboard.png \
+install -D -m 0644 data/icons/cinnamon-clipboard.png 
     %{buildroot}%{_datadir}/icons/hicolor/512x512/apps/cinnamon-clipboard.png
 
 install -d %{buildroot}%{_datadir}/applications
@@ -82,14 +81,14 @@ Terminal=false
 Categories=Utility;GTK;
 EOF
 
-desktop-file-install \
-    --dir=%{buildroot}%{_datadir}/applications \
+desktop-file-install 
+    --dir=%{buildroot}%{_datadir}/applications 
     %{_builddir}/cinnamon-clipboard.desktop
 
 for mo_file in locale/*/LC_MESSAGES/cinnamon-clipboard.mo; do
     [ -f "$mo_file" ] || continue
     lang=$(basename "$(dirname "$(dirname "$mo_file")")")
-    install -D -m 0644 "$mo_file" \
+    install -D -m 0644 "$mo_file" 
         "%{buildroot}%{_datadir}/locale/$lang/LC_MESSAGES/cinnamon-clipboard.mo"
 done
 
@@ -99,10 +98,10 @@ done
 %license LICENSE
 %doc README.md
 %{_bindir}/cinnamon-clipboard
-%{python3_sitelib}/cinnamon_clipboard/
+/usr/lib/python3/dist-packages/cinnamon_clipboard/
 %{_datadir}/applications/cinnamon-clipboard.desktop
 %{_datadir}/icons/hicolor/512x512/apps/cinnamon-clipboard.png
 
 %changelog
-* Thu Oct 22 2026 Pablo <quircopablo@gmail.com> - 1.0.4-1
+* Thu Oct 22 2026 Pablo <quircopablo@gmail.com> - 1.1.0-1
 - Initial RPM packaging for Fedora

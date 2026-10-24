@@ -1,10 +1,7 @@
-cinnamon-clipboard (1.1.0-1) noble; urgency=medium
+cinnamon-clipboard (1.1.1-1) noble; urgency=medium
 
-  * Add a new temporary history mode.
-  * Improve configuration persistence to prevent errors.
-  * Add Hungarian translation.
-  * Update and improve translations across all supported languages.
-  * Refresh the configuration dialog's visual design.
-  * Improve the overall user interface and configuration experience.
+  * Fix the Preferences window layout on smaller screens.
+  * Make the Preferences window resizable.
+  * Add vertical scrolling to the Preferences options while keeping the Cancel and Save buttons visible.
 
- -- Pablo <quircopablo@gmail.com>  Fri, 23 Oct 2026 00:00:00 -0300
+ -- Pablo <quircopablo@gmail.com>  Sat, 24 Oct 2026 00:00:00 -0300
