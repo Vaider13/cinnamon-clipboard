@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinnamon Clipboard 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-09-28 10:44-0300\n"
 "Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -306,3 +306,75 @@ msgstr "[Imagen]"
 
 #~ msgid "Clipboard Manager"
 #~ msgstr "Gestor de portapapeles"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "No se pudo eliminar el historial guardado."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "No se pudieron guardar las preferencias."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Eliminar el historial y cambiar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Historial persistente"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "Modo del historial"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Reiniciar y cambiar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "¿Cambiar al historial persistente?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "¿Cambiar al historial temporal?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Historial temporal"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "No se pudo iniciar el historial temporal."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "El historial se mantiene en la memoria RAM y se pierde al cerrar la aplicación o apagar o reiniciar el PC. No se guarda ninguna copia persistente del historial en el disco."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "El historial se guarda en una base de datos SQLite en el disco, junto con las imágenes. Los elementos se conservan al cerrar la aplicación o reiniciar el PC."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "El modo del historial no ha cambiado. Compruebe los permisos de los archivos e inténtelo de nuevo."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "No se pudo copiar la imagen."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "No se pudieron guardar las preferencias. Compruebe los permisos de los archivos e inténtelo de nuevo."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "No se pudo eliminar el historial guardado del portapapeles. Compruebe los permisos de los archivos y reinicie la aplicación."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "La base de datos del historial guardado del portapapeles y sus imágenes se eliminarán permanentemente. La aplicación se reiniciará con un historial vacío almacenado solo en memoria."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "El historial temporal se perderá al reiniciar la aplicación. El historial persistente comenzará vacío."

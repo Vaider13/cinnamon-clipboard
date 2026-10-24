@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinnamonのクリップボード 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-10-11 15:13-0300\n"
 "Last-Translator: 日本語翻訳チーム\n"
 "Language-Team: 日本語\n"
@@ -294,3 +294,75 @@ msgstr "リリースを見る"
 #: src/cinnamon_clipboard/ui/main_window.py:172
 msgid "[Image]"
 msgstr "[画像]"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "保存済みの履歴を削除できませんでした。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "設定を保存できませんでした。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "履歴を削除して切り替え"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "永続履歴"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "再起動して切り替え"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "永続履歴に切り替えますか？"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "一時履歴に切り替えますか？"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "一時履歴"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "一時履歴を開始できませんでした。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "履歴はRAMに保存され、アプリケーションの終了、PCのシャットダウンまたは再起動時に失われます。履歴の永続的なコピーはディスクに保存されません。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "履歴は画像とともにディスク上のSQLiteデータベースに保存されます。アプリケーションを終了したり、PCを再起動したりしても項目は保持されます。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "履歴モードは変更されていません。ファイルのアクセス権を確認して、もう一度お試しください。"
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "画像をコピーできませんでした。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "設定を保存できませんでした。ファイルのアクセス権を確認して、もう一度お試しください。"
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "保存済みのクリップボード履歴を削除できませんでした。ファイルのアクセス権を確認して、アプリケーションを再起動してください。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "保存されたクリップボード履歴のデータベースと画像は完全に削除されます。アプリケーションは履歴が空の状態で再起動し、履歴はメモリ内にのみ保存されます。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "アプリケーションの再起動時に一時履歴は失われます。永続履歴は空の状態で開始されます。"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "履歴モード"

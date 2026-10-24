@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-09-28 10:43-0300\n"
 "Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
 "Language-Team: English\n"
@@ -299,3 +299,75 @@ msgstr "[Image]"
 
 #~ msgid "Clipboard Manager"
 #~ msgstr "Clipboard Manager"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "Could not delete the saved history"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "Could not save preferences"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Delete history and switch"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Persistent history"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Restart and switch"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "Switch to persistent history?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "Switch to temporary history?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Temporary history"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "Temporary history could not be started"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "The history mode has not been changed. Check the file permissions and try again."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "The image could not be copied."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "The preferences could not be saved. Check the file permissions and try again."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "The temporary history will be lost when the application restarts. Persistent history will start empty."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "History mode"

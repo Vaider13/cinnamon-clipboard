@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Cinnamon Clipboard\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-10-23 18:17+0200\n"
 "Last-Translator: Pablo Quirco <quircopablo@gmail.com>\n"
 "Language-Team: Magyar\n"
@@ -310,3 +310,75 @@ msgstr "[Kép]"
 
 #~ msgid "Clipboard Manager"
 #~ msgstr "Clipboard Manager"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "A mentett előzményeket nem sikerült törölni."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "A beállításokat nem sikerült menteni."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Előzmények törlése és váltás"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Állandó előzmények"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Újraindítás és váltás"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "Átvált az állandó előzményekre?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "Átvált az ideiglenes előzményekre?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Ideiglenes előzmények"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "Az ideiglenes előzményeket nem sikerült elindítani."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "Az előzmények a memóriában maradnak, és az alkalmazás bezárásakor, illetve a számítógép leállításakor vagy újraindításakor elvesznek. Az előzményekről nem készül tartós másolat a lemezre."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "Az előzmények a képekkel együtt egy lemezen tárolt SQLite-adatbázisba kerülnek. A bejegyzések az alkalmazás bezárása vagy a számítógép újraindítása után is megmaradnak."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "Az előzmények módja nem változott. Ellenőrizze a fájlhozzáférési jogosultságokat, és próbálja újra."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "A képet nem sikerült másolni."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "A beállításokat nem sikerült menteni. Ellenőrizze a fájlhozzáférési jogosultságokat, és próbálja újra."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "A mentett vágólapelőzményeket nem sikerült törölni. Ellenőrizze a fájlhozzáférési jogosultságokat, majd indítsa újra az alkalmazást."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "A mentett vágólapelőzmények adatbázisa és a hozzá tartozó képek véglegesen törlődnek. Az alkalmazás üres, kizárólag memóriában tárolt előzményekkel indul újra."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "Az ideiglenes előzmények az alkalmazás újraindításakor elvesznek. Az állandó előzmények üresen indulnak."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "Előzmények módja"

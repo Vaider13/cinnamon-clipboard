@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Буфер обмена Cinnamon 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-10-11 15:13-0300\n"
 "Last-Translator: Команда русского перевода\n"
 "Language-Team: Русский\n"
@@ -297,3 +297,75 @@ msgstr "Просмотреть выпуск"
 #: src/cinnamon_clipboard/ui/main_window.py:172
 msgid "[Image]"
 msgstr "[Изображение]"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "Не удалось удалить сохранённую историю."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "Не удалось сохранить настройки."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Удалить историю и переключиться"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Постоянная история"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Перезапустить и переключиться"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "Переключиться на постоянную историю?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "Переключиться на временную историю?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Временная история"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "Не удалось запустить временную историю."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "История хранится в оперативной памяти и теряется при закрытии приложения, выключении или перезагрузке компьютера. Постоянная копия истории на диск не сохраняется."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "История вместе с изображениями хранится на диске в базе данных SQLite. Записи сохраняются после закрытия приложения или перезагрузки компьютера."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "Режим истории не изменён. Проверьте права доступа к файлам и повторите попытку."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "Не удалось скопировать изображение."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "Не удалось сохранить настройки. Проверьте права доступа к файлам и повторите попытку."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "Не удалось удалить сохранённую историю буфера обмена. Проверьте права доступа к файлам и перезапустите приложение."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "База сохранённой истории буфера обмена и изображения будут удалены без возможности восстановления. Приложение перезапустится с пустой историей, хранящейся только в памяти."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "Временная история будет потеряна при перезапуске приложения. Постоянная история начнётся с пустого списка."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "Режим истории"

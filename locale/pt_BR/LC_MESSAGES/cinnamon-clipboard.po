@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Área de transferência do Cinnamon 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-10-11 15:13-0300\n"
 "Last-Translator: Equipe de tradução para português do Brasil\n"
 "Language-Team: Português do Brasil\n"
@@ -297,3 +297,75 @@ msgstr "Ver lançamento"
 #: src/cinnamon_clipboard/ui/main_window.py:172
 msgid "[Image]"
 msgstr "[Imagem]"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "Não foi possível excluir o histórico salvo."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "Não foi possível salvar as preferências."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Excluir histórico e mudar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Histórico persistente"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Reiniciar e mudar"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "Mudar para o histórico persistente?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "Mudar para o histórico temporário?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Histórico temporário"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "Não foi possível iniciar o histórico temporário."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "O histórico é mantido na memória RAM e é perdido ao fechar o aplicativo ou desligar ou reiniciar o PC. Nenhuma cópia persistente do histórico é salva no disco."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "O histórico é armazenado em um banco de dados SQLite no disco, junto com as imagens. Os itens são preservados ao fechar o aplicativo ou reiniciar o PC."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "O modo do histórico não foi alterado. Verifique as permissões dos arquivos e tente novamente."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "Não foi possível copiar a imagem."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "Não foi possível salvar as preferências. Verifique as permissões dos arquivos e tente novamente."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "Não foi possível excluir o histórico salvo da área de transferência. Verifique as permissões dos arquivos e reinicie o aplicativo."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "O banco de dados do histórico salvo da área de transferência e suas imagens serão excluídos permanentemente. O aplicativo será reiniciado com um histórico vazio armazenado somente na memória."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "O histórico temporário será perdido quando o aplicativo for reiniciado. O histórico persistente começará vazio."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "Modo do histórico"

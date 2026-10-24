@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zwischenablage von Cinnamon 1.0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-20 11:14-0300\n"
+"POT-Creation-Date: 2026-10-23 22:39-0300\n"
 "PO-Revision-Date: 2026-10-11 15:13-0300\n"
 "Last-Translator: Deutsches Übersetzungsteam\n"
 "Language-Team: Deutsch\n"
@@ -297,3 +297,75 @@ msgstr "Release anzeigen"
 #: src/cinnamon_clipboard/ui/main_window.py:172
 msgid "[Image]"
 msgstr "[Bild]"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:613
+msgid "Could not delete the saved history"
+msgstr "Der gespeicherte Verlauf konnte nicht gelöscht werden."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:633
+msgid "Could not save preferences"
+msgstr "Einstellungen konnten nicht gespeichert werden."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:576
+msgid "Delete history and switch"
+msgstr "Verlauf löschen und wechseln"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:107
+msgid "Persistent history"
+msgstr "Permanenter Verlauf"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:584
+msgid "Restart and switch"
+msgstr "Neu starten und wechseln"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:578
+msgid "Switch to persistent history?"
+msgstr "Zum permanenten Verlauf wechseln?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:569
+msgid "Switch to temporary history?"
+msgstr "Zum temporären Verlauf wechseln?"
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:113
+msgid "Temporary history"
+msgstr "Temporärer Verlauf"
+
+#: src/cinnamon_clipboard/app.py:231
+msgid "Temporary history could not be started"
+msgstr "Der temporäre Verlauf konnte nicht gestartet werden."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:150
+msgid "The history is kept in RAM and is lost when closing the application or shutting down or restarting the PC. No persistent copy of the history is saved to disk."
+msgstr "Der Verlauf wird im Arbeitsspeicher gehalten und geht beim Schließen der Anwendung oder beim Herunterfahren oder Neustarten des PCs verloren. Es wird keine dauerhafte Kopie des Verlaufs auf der Festplatte gespeichert."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:137
+msgid "The history is stored in an SQLite database on disk, along with images. Items are preserved when closing the application or restarting the PC."
+msgstr "Der Verlauf wird zusammen mit Bildern in einer SQLite-Datenbank auf der Festplatte gespeichert. Einträge bleiben beim Schließen der Anwendung oder beim Neustart des PCs erhalten."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:617
+msgid "The history mode has not been changed. Check the file permissions and try again."
+msgstr "Der Verlaufsmodus wurde nicht geändert. Prüfen Sie die Dateiberechtigungen und versuchen Sie es erneut."
+
+#: src/cinnamon_clipboard/core/clipboard.py:664
+msgid "The image could not be copied."
+msgstr "Das Bild konnte nicht kopiert werden."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:637
+msgid "The preferences could not be saved. Check the file permissions and try again."
+msgstr "Die Einstellungen konnten nicht gespeichert werden. Prüfen Sie die Dateiberechtigungen und versuchen Sie es erneut."
+
+#: src/cinnamon_clipboard/app.py:235
+msgid "The saved clipboard history could not be deleted. Check file permissions and restart the application."
+msgstr "Der gespeicherte Zwischenablageverlauf konnte nicht gelöscht werden. Prüfen Sie die Dateiberechtigungen und starten Sie die Anwendung neu."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:571
+msgid "The saved clipboard history database and its images will be permanently deleted. The application will restart with an empty history stored only in memory."
+msgstr "Die gespeicherte Verlaufsdatenbank der Zwischenablage und die zugehörigen Bilder werden dauerhaft gelöscht. Die Anwendung wird mit einem leeren, nur im Arbeitsspeicher gespeicherten Verlauf neu gestartet."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:580
+msgid "The temporary history will be lost when the application restarts. Persistent history will start empty."
+msgstr "Der temporäre Verlauf geht beim Neustart der Anwendung verloren. Der permanente Verlauf beginnt leer."
+
+#: src/cinnamon_clipboard/ui/preferences_window.py:100
+msgid "History mode"
+msgstr "Verlaufsmodus"
