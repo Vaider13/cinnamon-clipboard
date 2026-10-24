@@ -13,6 +13,7 @@ Cinnamon Clipboard maintains a persistent history of copied content and provides
   - Files and folders.
 - Image previews.
 - Search through clipboard history.
+- Temporary clipboard history mode for sessions where you don't want to keep a persistent history.
 - Pin important items to keep them at the top of the history.
 - One-click copy back to the system clipboard.
 - Delete individual items or clear the entire history.
@@ -50,7 +51,7 @@ Download the latest `.deb` package from the project's [GitHub Releases page](htt
 Install it with:
 
 ```bash
-sudo apt install ./cinnamon-clipboard_1.0.4_all.deb
+sudo apt install ./cinnamon-clipboard_1.1.0_all.deb
 ```
 
 The package installs the application, desktop entry, icon, and available translation catalogs.
@@ -87,7 +88,7 @@ Download the latest `.rpm` package from the project's [GitHub Releases page](htt
 Install it from the terminal:
 
 ```bash
-sudo dnf install ./cinnamon-clipboard-1.0.4-1.fc45.noarch.rpm
+sudo dnf install ./cinnamon-clipboard-1.1.0-1.fc45.noarch.rpm
 ```
 
 **Note:** The RPM package has been tested on Fedora 45 Beta with Cinnamon. Testing has been limited, and compatibility with other Fedora versions or desktop environments is not guaranteed. Bugs may occur.
@@ -134,6 +135,7 @@ Cinnamon Clipboard includes translations for the following languages:
 
 - English
 - Spanish
+- Hungarian contributed by @xsak.
 - Italian
 - Portuguese (Brazil)
 - French
@@ -185,9 +187,9 @@ Users should not treat the privacy filter as a substitute for the security featu
 
 ## Project status
 
-Cinnamon Clipboard 1.0.4 is a stable release.
+Cinnamon Clipboard 1.1.0 is a stable release.
 
-This release introduces improvements to keyboard navigation, configurable initial focus when opening the menu, and an optional setting to paste an item automatically when selected. It also improves update handling for APT-managed installations and includes translations for the APT update-management notice.
+This release introduces a temporary clipboard history mode, improves configuration saving reliability, updates the configuration dialog's visual design, and adds Hungarian translation. It also includes updated translations across all supported languages.
 
 Thanks to **[@xsak](https://github.com/xsak)** for contributing keyboard navigation improvements.
 
